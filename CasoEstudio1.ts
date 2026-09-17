@@ -1,996 +1,910 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caso de Estudio 1 - Cocina FastFood</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise System Dashboard</title>
+    <!-- Babel standalone for runtime TypeScript compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* ==========================================
+           1. CSS VARIABLES & THEME SETUP
+           Palette: Red, Yellow, White & Neutral Dark
+           ========================================== */
+        :root {
+            --bg-main: #f4f5f7;
+            --bg-card: #ffffff;
+            --primary-red: #d32f2f;
+            --primary-red-hover: #b71c1c;
+            --primary-red-light: #ffebee;
+            --accent-yellow: #fbc02d;
+            --accent-yellow-light: #fffde7;
+            --accent-yellow-dark: #f57f17;
+            --text-dark: #212121;
+            --text-muted: #666666;
+            --border-color: #e0e0e0;
+            --border-red: #ef5350;
+            --border-yellow: #fdd835;
+            --sidebar-width: 260px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ==========================================
+           2. SIDEBAR NAVIGATION
+           ========================================== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--primary-red);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem 1rem;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            background-color: var(--accent-yellow);
+            color: var(--primary-red);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .brand-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-item.active {
+            background-color: var(--accent-yellow);
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+
+        .user-profile {
+            background-color: rgba(0, 0, 0, 0.15);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--accent-yellow);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background-color: #ffffff;
+            color: var(--primary-red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        /* ==========================================
+           3. MAIN LAYOUT & HEADER
+           ========================================== */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-header {
+            background-color: var(--bg-card);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            color: var(--primary-red);
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-badge {
+            background-color: var(--accent-yellow-light);
+            border: 1px solid var(--accent-yellow);
+            color: var(--accent-yellow-dark);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* ==========================================
+           4. METRIC CARDS SECTION
+           ========================================== */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .metric-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-top: 4px solid var(--primary-red);
+            border-radius: var(--radius-md);
+            padding: 1.2rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .metric-card.yellow-accent {
+            border-top-color: var(--accent-yellow);
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .metric-subtext {
+            font-size: 0.75rem;
+            color: var(--primary-red);
+            font-weight: 500;
+        }
+
+        /* ==========================================
+           5. DASHBOARD GRID PANELS
+           ========================================== */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--primary-red-light);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-red);
+        }
+
+        /* ==========================================
+           6. FORM CONTROLS & BUTTONS
+           ========================================== */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .form-control {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 2px var(--primary-red-light);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-red);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-red-hover);
+        }
+
+        .btn-accent {
+            background-color: var(--accent-yellow);
+            color: var(--text-dark);
+        }
+
+        .btn-accent:hover {
+            background-color: var(--accent-yellow-dark);
+            color: #ffffff;
+        }
+
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: #d6d6d6;
+        }
+
+        /* ==========================================
+           7. DATA TABLE STYLING
+           ========================================== */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .data-table th {
+            background-color: var(--primary-red-light);
+            color: var(--primary-red);
+            padding: 12px;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border-red);
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table tr:hover {
+            background-color: var(--accent-yellow-light);
+        }
+
+        .badge-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .badge-active {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-pending {
+            background-color: var(--accent-yellow-light);
+            color: var(--accent-yellow-dark);
+            border: 1px solid var(--accent-yellow);
+        }
+
+        .badge-failed {
+            background-color: var(--primary-red-light);
+            color: var(--primary-red);
+        }
+
+        /* ==========================================
+           8. ACTIVITY LOG & ALERTS
+           ========================================== */
+        .log-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            padding: 10px;
+            background-color: #fafafa;
+            border-left: 3px solid var(--accent-yellow);
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .log-item.error {
+            border-left-color: var(--primary-red);
+            background-color: var(--primary-red-light);
+        }
+
+        .log-timestamp {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            margin-bottom: 2px;
+        }
+
+        .log-message {
+            font-weight: 500;
+        }
+
+        .alert-box {
+            background-color: var(--accent-yellow-light);
+            border: 1px solid var(--accent-yellow);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            color: var(--accent-yellow-dark);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<script>
-/**
- * TALLER CON FRONTEND - CASO DE ESTUDIO 1: COCINA DE COMIDA RÁPIDA
- * Estructuras Propias: Lista Enlazada + Cola Circular O(1) + Pila LIFO O(1)
- * Todo en un solo archivo autosuficiente para Sublime Text / TypeScript.
- */
-
-// ============================================================================
-// 1. ESTRUCTURAS DE DATOS PROPIAS (ESTRICTAMENTE PROHIBIDO USAR ARRAY NATIVO)
-// ============================================================================
-
-class NodoLista {
-  constructor(info) {
-    this.info = info;
-    this.sig = null;
-  }
-}
-
-/** Lista Enlazada Simple para el Catálogo y Recetas */
-class ListaEnlazada {
-  constructor() {
-    this.cabeza = null;
-    this.tam = 0;
-  }
-
-  insertarFinal(elem) {
-    const nuevo = new NodoLista(elem);
-    if (!this.cabeza) {
-      this.cabeza = nuevo;
-    } else {
-      let aux = this.cabeza;
-      while (aux.sig !== null) {
-        aux = aux.sig;
-      }
-      aux.sig = nuevo;
-    }
-    this.tam++;
-  }
-
-  obtenerLongitud() {
-    return this.tam;
-  }
-
-  obtenerEn(pos) {
-    if (pos < 0 || pos >= this.tam) return null;
-    let aux = this.cabeza;
-    let idx = 0;
-    while (aux !== null && idx < pos) {
-      aux = aux.sig;
-      idx++;
-    }
-    return aux ? aux.info : null;
-  }
-
-  existe(predicado) {
-    let aux = this.cabeza;
-    while (aux !== null) {
-      if (predicado(aux.info)) return true;
-      aux = aux.sig;
-    }
-    return false;
-  }
-
-  buscar(predicado) {
-    let aux = this.cabeza;
-    while (aux !== null) {
-      if (predicado(aux.info)) return aux.info;
-      aux = aux.sig;
-    }
-    return null;
-  }
-
-  aArray() {
-    const arr = [];
-    let aux = this.cabeza;
-    while (aux !== null) {
-      arr.push(aux.info);
-      aux = aux.sig;
-    }
-    return arr;
-  }
-}
-
-/** Cola Circular basada en Arreglo Estático de Tamaño Fijo - O(1) */
-class ColaCircular {
-  constructor(capacidad) {
-    this.capacidad = capacidad;
-    this.arreglo = new Array(capacidad).fill(null);
-    this.frente = 0;
-    this.final = 0;
-    this.contador = 0;
-  }
-
-  estaLlena() {
-    return this.contador === this.capacidad;
-  }
-
-  estaVacia() {
-    return this.contador === 0;
-  }
-
-  encolar(item) {
-    if (this.estaLlena()) return false;
-    this.arreglo[this.final] = item;
-    this.final = (this.final + 1) % this.capacidad;
-    this.contador++;
-    return true;
-  }
-
-  desencolar() {
-    if (this.estaVacia()) return null;
-    const elem = this.arreglo[this.frente];
-    this.arreglo[this.frente] = null;
-    this.frente = (this.frente + 1) % this.capacidad;
-    this.contador--;
-    return elem;
-  }
-
-  verFrente() {
-    if (this.estaVacia()) return null;
-    return this.arreglo[this.frente];
-  }
-
-  obtenerLongitud() {
-    return this.contador;
-  }
-
-  obtenerCapacidad() {
-    return this.capacidad;
-  }
-
-  aArrayEnOrden() {
-    const arr = [];
-    let idx = this.frente;
-    for (let i = 0; i < this.contador; i++) {
-      const item = this.arreglo[idx];
-      if (item !== null) arr.push(item);
-      idx = (idx + 1) % this.capacidad;
-    }
-    return arr;
-  }
-}
-
-class NodoPila {
-  constructor(info) {
-    this.info = info;
-    this.sig = null;
-  }
-}
-
-/** Pila LIFO basada en Nodos - O(1) */
-class PilaEncadenada {
-  constructor() {
-    this.tope = null;
-    this.tam = 0;
-  }
-
-  apilar(elem) {
-    const nuevo = new NodoPila(elem);
-    nuevo.sig = this.tope;
-    this.tope = nuevo;
-    this.tam++;
-  }
-
-  desapilar() {
-    if (this.estaVacia()) return null;
-    const item = this.tope.info;
-    this.tope = this.tope.sig;
-    this.tam--;
-    return item;
-  }
-
-  verTope() {
-    return this.tope ? this.tope.info : null;
-  }
-
-  estaVacia() {
-    return this.tope === null;
-  }
-
-  obtenerLongitud() {
-    return this.tam;
-  }
-
-  aArrayDesdeTope() {
-    const arr = [];
-    let aux = this.tope;
-    while (aux !== null) {
-      arr.push(aux.info);
-      aux = aux.sig;
-    }
-    return arr;
-  }
-
-  vaciar() {
-    const removidos = [];
-    while (!this.estaVacia()) {
-      const elem = this.desapilar();
-      if (elem !== null) removidos.push(elem);
-    }
-    return removidos;
-  }
-}
-
-// ============================================================================
-// 2. LÓGICA DE NEGOCIO (SISTEMA DE COCINA)
-// ============================================================================
-
-class SistemaCocina {
-  constructor(capacidadMaxColas = 5) {
-    this.catálogo = new ListaEnlazada();
-    this.colaMostrador = new ColaCircular(capacidadMaxColas);
-    this.colaDomicilio = new ColaCircular(capacidadMaxColas);
-    this.pilaArmado = new PilaEncadenada();
-    
-    this.pedidoEnArmado = null;
-    this.contadorMostradorAtendidos = 0; // Regla R2 (3:1)
-    this.consecutivoPedido = 1;
-
-    // Métricas
-    this.totalAtendidosMostrador = 0;
-    this.totalAtendidosDomicilio = 0;
-    this.totalRechazadosMostrador = 0;
-    this.totalRechazadosDomicilio = 0;
-    this.erroresArmadoContador = 0;
-    this.listaDesperdicios = new ListaEnlazada();
-    this.historialPedidos = new ListaEnlazada();
-    this.bitacora = new ListaEnlazada();
-
-    this.registrarBitacora("Sistema inicializado. Colas configuradas con capacidad C=" + capacidadMaxColas);
-  }
-
-  registrarBitacora(msj) {
-    const hora = new Date().toLocaleTimeString();
-    this.bitacora.insertarFinal(`[${hora}] ${msj}`);
-  }
-
-  // RF-01: cargarCatalogo(datos)
-  cargarCatalogo(productos) {
-    for (const p of productos) {
-      if (!p.codigo || p.receta.length === 0) {
-        throw new Error("R1-ERR: Producto inválido o receta vacía.");
-      }
-      if (this.catálogo.existe(prod => prod.codigo === p.codigo)) {
-        throw new Error(`R1-ERR: El código de producto ${p.codigo} ya existe.`);
-      }
-
-      const recetaLista = new ListaEnlazada();
-      for (const capa of p.receta) {
-        recetaLista.insertarFinal(capa.trim().toLowerCase());
-      }
-
-      this.catálogo.insertarFinal({
-        codigo: p.codigo,
-        nombre: p.nombre,
-        receta: recetaLista
-      });
-    }
-    this.registrarBitacora(`Catálogo cargado con ${productos.length} productos.`);
-  }
-
-  // RF-02: registrarPedido(canal, codigo, sin[], minuto)
-  registrarPedido(canal, codigoProd, sinCapas, minuto) {
-    const prod = this.catálogo.buscar(p => p.codigo === codigoProd);
-    if (!prod) throw new Error("R2-ERR: El producto seleccionado no existe en el catálogo.");
-
-    const sinLista = new ListaEnlazada();
-    for (const s of sinCapas) {
-      const capaBuscada = s.trim().toLowerCase();
-      if (!prod.receta.existe(c => c === capaBuscada)) {
-        throw new Error(`R2-ERR: La capa '${s}' no pertenece a la receta del producto.`);
-      }
-      sinLista.insertarFinal(capaBuscada);
-    }
-
-    const nuevoPedido = {
-      numero: this.consecutivoPedido++,
-      canal: canal,
-      productoCodigo: codigoProd,
-      sin: sinLista,
-      minutoLlegada: minuto,
-      estado: 'EN_COLA'
-    };
-
-    // Aplicar R7: Límite de capacidad en colas
-    if (canal === 'MOSTRADOR') {
-      if (this.colaMostrador.estaLlena()) {
-        this.totalRechazadosMostrador++;
-        this.registrarBitacora(`RECHAZO (R7): Cola MOSTRADOR llena. Pedido #${nuevoPedido.numero} rechazado.`);
-        throw new Error("REGLA R7: La cola de MOSTRADOR está llena. Rechazar pedido.");
-      }
-      this.colaMostrador.encolar(nuevoPedido);
-    } else {
-      if (this.colaDomicilio.estaLlena()) {
-        this.totalRechazadosDomicilio++;
-        this.registrarBitacora(`RECHAZO (R7): Cola DOMICILIO llena. Pedido #${nuevoPedido.numero} rechazado.`);
-        throw new Error("REGLA R7: La cola de DOMICILIO está llena. Rechazar pedido.");
-      }
-      this.colaDomicilio.encolar(nuevoPedido);
-    }
-
-    this.registrarBitacora(`Pedido #${nuevoPedido.numero} (${canal}) ingresó a la cola en el minuto ${minuto}.`);
-    return nuevoPedido;
-  }
-
-  // RF-03: siguientePedido()
-  siguientePedido() {
-    if (this.pedidoEnArmado !== null) {
-      throw new Error("ERR: Ya hay un pedido en la estación de armado. Debe finalizarlo o cancelarlo primero.");
-    }
-
-    if (this.colaMostrador.estaVacia() && this.colaDomicilio.estaVacia()) {
-      return null;
-    }
-
-    let elegido = null;
-    let motivo = "";
-
-    // Aplicar Regla R2 (3:1)
-    if (!this.colaMostrador.estaVacia() && this.contadorMostradorAtendidos < 3) {
-      elegido = this.colaMostrador.desencolar();
-      this.contadorMostradorAtendidos++;
-      motivo = `Atendido de MOSTRADOR (Conteo R2: ${this.contadorMostradorAtendidos}/3).`;
-    } else if (!this.colaDomicilio.estaVacia()) {
-      elegido = this.colaDomicilio.desencolar();
-      this.contadorMostradorAtendidos = 0; // Reinicia al atender domicilio
-      motivo = `Atendido de DOMICILIO (Reajuste de ratio R2 a 0/3).`;
-    } else if (!this.colaMostrador.estaVacia()) {
-      elegido = this.colaMostrador.desencolar();
-      this.contadorMostradorAtendidos++;
-      motivo = `Atendido de MOSTRADOR (Cola domicilio vacía).`;
-    }
-
-    if (elegido) {
-      elegido.estado = 'EN_ARMADO';
-      this.pedidoEnArmado = elegido;
-      this.pilaArmado.vaciar();
-      this.registrarBitacora(`Siguiente Pedido: #${elegido.numero} pasó a EN_ARMADO. ${motivo}`);
-      return { pedido: elegido, motivo };
-    }
-
-    return null;
-  }
-
-  obtenerRecetaEsperada(pedido) {
-    const prod = this.catálogo.buscar(p => p.codigo === pedido.productoCodigo);
-    if (!prod) return [];
-    
-    const recetaOriginal = prod.receta.aArray();
-    const sinArray = pedido.sin.aArray();
-
-    return recetaOriginal.filter(capa => !sinArray.includes(capa));
-  }
-
-  // RF-04: colocarCapa(capa)
-  colocarCapa(capa) {
-    if (!this.pedidoEnArmado) throw new Error("ERR: No hay ningún pedido activo en la estación.");
-
-    const capaLimpia = capa.trim().toLowerCase();
-    const recetaEsperada = this.obtenerRecetaEsperada(this.pedidoEnArmado);
-    
-    const pasoActual = this.pilaArmado.obtenerLongitud();
-    let advertencia = undefined;
-
-    if (pasoActual >= recetaEsperada.length || recetaEsperada[pasoActual] !== capaLimpia) {
-      // Regla R5
-      this.erroresArmadoContador++;
-      advertencia = `REGLA R5 VIOLADA: La capa '${capaLimpia}' no corresponde al paso ${pasoActual + 1} de la receta esperada (${recetaEsperada[pasoActual] || 'Fin de receta'}).`;
-      this.registrarBitacora(`ERROR ARMADO (R5): Capa '${capaLimpia}' en Pedido #${this.pedidoEnArmado.numero}.`);
-    }
-
-    this.pilaArmado.apilar(capaLimpia);
-    this.registrarBitacora(`Colocada capa '${capaLimpia}' en Pedido #${this.pedidoEnArmado.numero}.`);
-    return { exitoso: true, advertenciaR5: advertencia };
-  }
-
-  // RF-05: retirarCapa()
-  retirarCapa() {
-    if (!this.pedidoEnArmado) throw new Error("ERR: No hay ningún pedido en armado.");
-    if (this.pilaArmado.estaVacia()) throw new Error("ERR: La pila de capas está vacía.");
-
-    const retirada = this.pilaArmado.desapilar();
-    this.listaDesperdicios.insertarFinal({ capa: retirada, motivo: 'DESAPILADO_CORRECCION' });
-    this.registrarBitacora(`Retirada capa tope '${retirada}' del Pedido #${this.pedidoEnArmado.numero}. Registrada como desperdicio.`);
-    return retirada;
-  }
-
-  // RF-06: verificar()
-  verificar() {
-    if (!this.pedidoEnArmado) throw new Error("ERR: No hay pedido en armado.");
-
-    const recetaEsperada = this.obtenerRecetaEsperada(this.pedidoEnArmado);
-    const pilaDesdeTope = this.pilaArmado.aArrayDesdeTope();
-    const pilaDesdeBase = [...pilaDesdeTope].reverse();
-
-    let esExacto = true;
-    if (pilaDesdeBase.length !== recetaEsperada.length) esExacto = false;
-
-    for (let i = 0; i < pilaDesdeBase.length; i++) {
-      if (i >= recetaEsperada.length || pilaDesdeBase[i] !== recetaEsperada[i]) {
-        esExacto = false;
-        break;
-      }
-    }
-
-    const faltantes = [];
-    if (pilaDesdeBase.length < recetaEsperada.length) {
-      for (let i = pilaDesdeBase.length; i < recetaEsperada.length; i++) {
-        faltantes.push(recetaEsperada[i]);
-      }
-    }
-
-    const sobrantes = [];
-    if (pilaDesdeBase.length > recetaEsperada.length) {
-      for (let i = recetaEsperada.length; i < pilaDesdeBase.length; i++) {
-        sobrantes.push(pilaDesdeBase[i]);
-      }
-    }
-
-    return { esCorrecto: esExacto, faltantes, sobrantes, colocadas: pilaDesdeBase };
-  }
-
-  // RF-07: marcarListo()
-  marcarListo(minutoActual) {
-    if (!this.pedidoEnArmado) throw new Error("ERR: No hay pedido en la estación de armado.");
-
-    const verificacion = this.verificar();
-    if (!verificacion.esCorrecto) {
-      throw new Error("REGLA R4 VIOLADA: El producto no coincide exactamente con la receta esperada. Corrija las capas.");
-    }
-
-    const ped = this.pedidoEnArmado;
-    ped.estado = 'LISTO';
-    ped.minutoFinalizacion = minutoActual;
-
-    const tiempoTotal = minutoActual - ped.minutoLlegada;
-    const limite = ped.canal === 'MOSTRADOR' ? 8 : 20;
-    ped.cumplePromesa = tiempoTotal <= limite;
-
-    if (ped.canal === 'MOSTRADOR') this.totalAtendidosMostrador++;
-    else this.totalAtendidosDomicilio++;
-
-    this.historialPedidos.insertarFinal(ped);
-    this.registrarBitacora(`Pedido #${ped.numero} MARCADO COMO LISTO en min ${minutoActual}. Tiempo: ${tiempoTotal}m (${ped.cumplePromesa ? 'CUMPLE R8' : 'INCUMPLE R8'}).`);
-    
-    this.pedidoEnArmado = null;
-    this.pilaArmado.vaciar();
-  }
-
-  // RF-08: cancelarPedido()
-  cancelarPedido() {
-    if (!this.pedidoEnArmado) throw new Error("ERR: No hay pedido para cancelar.");
-
-    const ped = this.pedidoEnArmado;
-    ped.estado = 'CANCELADO';
-
-    const capasDesperdiciadas = this.pilaArmado.vaciar();
-    for (const c of capasDesperdiciadas) {
-      this.listaDesperdicios.insertarFinal({ capa: c, motivo: 'CANCELADO' });
-    }
-
-    this.historialPedidos.insertarFinal(ped);
-    this.registrarBitacora(`Pedido #${ped.numero} CANCELADO (R6). ${capasDesperdiciadas.length} capas enviadas a desperdicio.`);
-    this.pedidoEnArmado = null;
-  }
-}
-
-// ============================================================================
-// 3. INTERFAZ GRÁFICA Y CONTROLADOR DOM
-// ============================================================================
-
-class InterfazCocina {
-  constructor() {
-    this.sistema = new SistemaCocina(5);
-    this.minutoSimulado = 0;
-    this.inyectarEstilosCSS();
-    this.construirEstructuraDOM();
-    this.cargarDatosEjemplo();
-    this.actualizarPantalla();
-  }
-
-  inyectarEstilosCSS() {
-    const style = document.createElement('style');
-    style.textContent = `
-      :root {
-        --bg-dark: #0f172a;
-        --panel-bg: #1e293b;
-        --accent-blue: #38bdf8;
-        --accent-green: #22c55e;
-        --accent-amber: #f59e0b;
-        --accent-red: #ef4444;
-        --text-light: #f8fafc;
-        --text-muted: #94a3b8;
-        --border-color: #334155;
-      }
-
-      * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-      body { background-color: var(--bg-dark); color: var(--text-light); min-height: 100vh; display: flex; flex-direction: column; }
-      
-      header { background: #0284c7; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
-      header h1 { font-size: 1.5rem; color: white; display: flex; align-items: center; gap: 10px; }
-      
-      nav { display: flex; gap: 8px; background: #0f172a; padding: 8px 2rem; border-bottom: 1px solid var(--border-color); }
-      nav button { background: transparent; border: none; color: var(--text-muted); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.95rem; }
-      nav button.active { background: #0284c7; color: white; }
-
-      main { flex: 1; padding: 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; }
-
-      .seccion { display: none; }
-      .seccion.active { display: grid; gap: 1.5rem; }
-
-      .card { background: var(--panel-bg); border-radius: 8px; border: 1px solid var(--border-color); padding: 1.25rem; }
-      .card h2 { font-size: 1.15rem; color: var(--accent-blue); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
-
-      .grid-2 { grid-template-columns: 1fr 1fr; }
-      .grid-armado { grid-template-columns: 280px 1fr 300px; }
-
-      .form-group { margin-bottom: 1rem; }
-      label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
-      select, input { width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: #0f172a; color: white; outline: none; }
-      .btn { background: #0284c7; border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
-      .btn:hover { opacity: 0.9; }
-      .btn-danger { background: var(--accent-red); }
-      .btn-amber { background: var(--accent-amber); color: #000; }
-      .btn-green { background: var(--accent-green); color: #000; }
-
-      .cola-container { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; min-height: 80px; align-items: center; }
-      .cola-item { background: #334155; padding: 8px 12px; border-radius: 6px; border-left: 4px solid var(--accent-blue); min-width: 120px; text-align: center; }
-      .cola-item.frente { border-left-color: var(--accent-green); background: #1e3a8a; }
-
-      .pila-visual { display: flex; flex-direction: column-reverse; background: #0f172a; border: 2px dashed var(--border-color); border-radius: 8px; min-height: 320px; padding: 10px; gap: 6px; justify-content: flex-start; }
-      .capa-block { background: #334155; padding: 10px; border-radius: 4px; text-align: center; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: white; border: 1px solid rgba(255,255,255,0.1); }
-      .capa-block.tope { border: 2px solid var(--accent-amber); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
-
-      .alert-error { background: #450a0a; border: 1px solid var(--accent-red); color: #fca5a5; padding: 10px; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; display: none; }
-      .bitacora-box { background: #0f172a; border-radius: 6px; height: 250px; overflow-y: auto; padding: 10px; font-family: monospace; font-size: 0.85rem; color: #a7f3d0; border: 1px solid var(--border-color); }
-
-      .badge { padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
-      .badge-mostrador { background: #0284c7; color: white; }
-      .badge-domicilio { background: #d97706; color: white; }
-    `;
-    document.head.appendChild(style);
-  }
-
-  construirEstructuraDOM() {
-    document.body.innerHTML = `
-      <header>
-        <h1>🍔 FastFood Kitchen Engine</h1>
-        <div style="display:flex; gap:15px; align-items:center;">
-          <span>Minuto Reloj: <strong id="lbl-minuto" style="color:var(--accent-amber)">0</strong></span>
-          <button class="btn btn-amber" id="btn-avanzar-minuto">+1 Minuto</button>
-          <button class="btn btn-green" id="btn-cargar-ejemplo">Cargar Datos Ejemplo</button>
-        </div>
-      </header>
-
-      <nav>
-        <button class="tab-btn active" data-tab="sec-toma">1. Toma de Pedido</button>
-        <button class="tab-btn" data-tab="sec-cocina">2. Pantalla de Cocina (Colas)</button>
-        <button class="tab-btn" data-tab="sec-armado">3. Estación de Armado (Pila LIFO)</button>
-        <button class="tab-btn" data-tab="sec-reportes">4. Métricas & Bitácora</button>
-      </nav>
-
-      <main>
-        <div id="alert-global" class="alert-error"></div>
-
-        <div id="sec-toma" class="seccion active grid-2">
-          <div class="card">
-            <h2>Registrar Nuevo Pedido</h2>
-            <form id="form-pedido">
-              <div class="form-group">
-                <label>Canal de Atención</label>
-                <select id="sel-canal">
-                  <option value="MOSTRADOR">Mostrador (Atención de pie)</option>
-                  <option value="DOMICILIO">Domicilio (App Externa)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Producto del Catálogo</label>
-                <select id="sel-producto"></select>
-              </div>
-              <div class="form-group">
-                <label>Capas a Omitir (Sin):</label>
-                <div id="box-capas-omitir" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
-              </div>
-              <button type="submit" class="btn btn-green" style="width:100%">Encolar Pedido</button>
-            </form>
-          </div>
-
-          <div class="card">
-            <h2>Catálogo de Productos y Recetas</h2>
-            <div id="lista-catalogo"></div>
-          </div>
-        </div>
-
-        <div id="sec-cocina" class="seccion grid-2">
-          <div class="card">
-            <div style="display:flex; justify-content:space-between;">
-              <h2>Cola MOSTRADOR (Máx 5)</h2>
-              <span id="cant-mostrador" class="badge badge-mostrador">0 / 5</span>
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <div class="brand-logo">TS</div>
+                <div class="brand-title">ControlHub</div>
             </div>
-            <div style="font-size:0.8rem; color:var(--text-muted)">[FRENTE] ➔ [FINAL]</div>
-            <div id="cola-mostrador-ui" class="cola-container"></div>
-          </div>
-
-          <div class="card">
-            <div style="display:flex; justify-content:space-between;">
-              <h2>Cola DOMICILIO (Máx 5)</h2>
-              <span id="cant-domicilio" class="badge badge-domicilio">0 / 5</span>
-            </div>
-            <div style="font-size:0.8rem; color:var(--text-muted)">[FRENTE] ➔ [FINAL]</div>
-            <div id="cola-domicilio-ui" class="cola-container"></div>
-          </div>
-
-          <div class="card" style="grid-column: span 2;">
-            <h2>Control de Despacho (Regla 3:1)</h2>
-            <p style="margin-bottom:10px; color:var(--text-muted)">
-              Contador Regla R2 (Mostrador atendidos): <strong id="lbl-r2-counter" style="color:var(--accent-amber)">0 / 3</strong>
-            </p>
-            <button id="btn-siguiente-pedido" class="btn btn-green" style="font-size:1.1rem; padding:12px 24px;">
-              🔔 Llamar Siguiente Pedido a Armado
-            </button>
-          </div>
+            <ul class="nav-list">
+                <li class="nav-item active" id="nav-dashboard">Dashboard</li>
+                <li class="nav-item" id="nav-documents">Document Processing</li>
+                <li class="nav-item" id="nav-servers">Server Nodes</li>
+                <li class="nav-item" id="nav-logs">System Logs</li>
+                <li class="nav-item" id="nav-settings">Settings</li>
+            </ul>
         </div>
-
-        <div id="sec-armado" class="seccion grid-armado">
-          <div class="card">
-            <h2>Pila de Capas (LIFO)</h2>
-            <div id="pila-ui" class="pila-visual"></div>
-          </div>
-
-          <div class="card">
-            <h2>Pedido Activo en Estación</h2>
-            <div id="info-pedido-activo">Sin pedido en armado.</div>
-            <hr style="border-color:var(--border-color); margin:1rem 0;">
-            <h3>Controles de Armado</h3>
-            <div style="display:flex; gap:8px; margin-top:10px;">
-              <select id="sel-capa-colocar"></select>
-              <button id="btn-colocar-capa" class="btn">Apilar Capa</button>
+        <div class="user-profile">
+            <div class="user-avatar">AD</div>
+            <div class="user-details">
+                <span class="user-name">Administrator</span>
+                <span class="user-role">System Architect</span>
             </div>
-            <div style="display:flex; gap:8px; margin-top:15px; flex-wrap:wrap;">
-              <button id="btn-retirar-capa" class="btn btn-amber">Desapilar Capa (LIFO)</button>
-              <button id="btn-verificar" class="btn">Verificar Receta (RF-06)</button>
-              <button id="btn-marcar-listo" class="btn btn-green">Marcar LISTO</button>
-              <button id="btn-cancelar-pedido" class="btn btn-danger">Cancelar Pedido (R6)</button>
+        </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+        <!-- TOP HEADER -->
+        <header class="top-header">
+            <h1 class="header-title" id="page-title">Enterprise System Dashboard</h1>
+            <div class="header-actions">
+                <span class="status-badge" id="system-status">System Operational</span>
+                <button class="btn btn-accent" id="btn-refresh">Refresh Engine</button>
             </div>
-          </div>
+        </header>
 
-          <div class="card">
-            <h2>Receta Esperada</h2>
-            <div id="receta-esperada-ui"></div>
-          </div>
-        </div>
+        <!-- MAIN CONTENT AREA -->
+        <main class="content-area">
 
-        <div id="sec-reportes" class="seccion grid-2">
-          <div class="card">
-            <h2>Métricas del Sistema</h2>
-            <div id="metrics-ui"></div>
-          </div>
+            <!-- METRIC CARDS -->
+            <section class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-label">Total Documents</span>
+                    <span class="metric-value" id="metric-docs">1,284</span>
+                    <span class="metric-subtext">+12% from last hour</span>
+                </div>
+                <div class="metric-card yellow-accent">
+                    <span class="metric-label">Active Server Nodes</span>
+                    <span class="metric-value" id="metric-servers">8 / 10</span>
+                    <span class="metric-subtext">2 nodes standby</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Average Latency</span>
+                    <span class="metric-value" id="metric-latency">42 ms</span>
+                    <span class="metric-subtext">Optimal performance</span>
+                </div>
+                <div class="metric-card yellow-accent">
+                    <span class="metric-label">Error Rate</span>
+                    <span class="metric-value" id="metric-errors">0.04%</span>
+                    <span class="metric-subtext">Within safety parameters</span>
+                </div>
+            </section>
 
-          <div class="card">
-            <h2>Bitácora Cronológica de Operaciones</h2>
-            <div id="bitacora-ui" class="bitacora-box"></div>
-          </div>
-        </div>
-      </main>
-    `;
+            <!-- MAIN PANELS -->
+            <section class="dashboard-grid">
+                <!-- PANEL 1: DATA TABLE & ENGINE CONTROL -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Batch Document Processing Queue</h2>
+                        <button class="btn btn-primary" id="btn-add-doc">Process New Batch</button>
+                    </div>
 
-    this.asociarEventosUI();
-  }
+                    <div class="alert-box" id="alert-banner">
+                        <span>Notice: Automated document compilation active using TypeScript engine layer.</span>
+                    </div>
 
-  asociarEventosUI() {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const target = e.target.getAttribute('data-tab');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.seccion').forEach(s => s.classList.remove('active'));
-        e.target.classList.add('active');
-        document.getElementById(target).classList.add('active');
-      });
-    });
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Document Name</th>
+                                    <th>Format</th>
+                                    <th>Size</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="document-table-body">
+                                <!-- Populated dynamically by TypeScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-    document.getElementById('btn-avanzar-minuto').addEventListener('click', () => {
-      this.minutoSimulado++;
-      document.getElementById('lbl-minuto').innerText = this.minutoSimulado.toString();
-    });
+                <!-- PANEL 2: SYSTEM LOGS & ACTIONS -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">System Event Logs</h2>
+                        <button class="btn btn-secondary" id="btn-clear-logs">Clear</button>
+                    </div>
 
-    document.getElementById('btn-cargar-ejemplo').addEventListener('click', () => {
-      this.cargarDatosEjemplo();
-      this.actualizarPantalla();
-    });
+                    <div class="form-group">
+                        <label for="log-filter">Filter Severity</label>
+                        <select id="log-filter" class="form-control">
+                            <option value="ALL">All Events</option>
+                            <option value="INFO">Information Only</option>
+                            <option value="WARNING">Warnings</option>
+                            <option value="ERROR">Errors</option>
+                        </select>
+                    </div>
 
-    document.getElementById('form-pedido').addEventListener('submit', (e) => {
-      e.preventDefault();
-      try {
-        const canal = document.getElementById('sel-canal').value;
-        const prodCodigo = document.getElementById('sel-producto').value;
+                    <div class="log-container" id="log-container">
+                        <!-- Populated dynamically by TypeScript -->
+                    </div>
+
+                    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 8px;">
+                        <label style="font-weight: 600; font-size: 0.85rem;">Manual System Dispatch</label>
+                        <div class="btn-group">
+                            <button class="btn btn-accent" id="btn-dispatch-job" style="flex: 1;">Dispatch Task</button>
+                            <button class="btn btn-primary" id="btn-trigger-error" style="flex: 1;">Simulate Fail</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ====================================================================
+         TYPESCRIPT ARCHITECTURE IMPLEMENTATION
+         ==================================================================== -->
+    <script type="text/babel" lang="ts">
+
+        // ==========================================
+        // 1. DATA MODELS & ENUMS
+        // ==========================================
         
-        const capasOmitir = [];
-        document.querySelectorAll('.chk-omitir:checked').forEach(chk => {
-          capasOmitir.push(chk.value);
+        type DocumentFormat = "PDF" | "DOCX" | "JSON" | "XML";
+        type ProcessStatus = "COMPLETED" | "PROCESSING" | "QUEUED" | "FAILED";
+        type LogSeverity = "INFO" | "WARNING" | "ERROR";
+
+        interface BatchDocument {
+            id: string;
+            filename: string;
+            format: DocumentFormat;
+            sizeMb: number;
+            status: ProcessStatus;
+            createdAt: Date;
+        }
+
+        interface SystemLog {
+            id: string;
+            timestamp: Date;
+            severity: LogSeverity;
+            message: string;
+        }
+
+        interface ServerNode {
+            nodeId: string;
+            name: string;
+            loadPercentage: number;
+            isOnline: boolean;
+        }
+
+        // ==========================================
+        // 2. STATE MANAGEMENT LAYER
+        // ==========================================
+
+        class SystemStateManager {
+            private documents: BatchDocument[] = [];
+            private logs: SystemLog[] = [];
+            private servers: ServerNode[] = [];
+            private listeners: Array<() => void> = [];
+
+            constructor() {
+                this.seedInitialData();
+            }
+
+            private seedInitialData(): void {
+                this.documents = [
+                    { id: "DOC-1001", filename: "financial_report_q3.pdf", format: "PDF", sizeMb: 4.2, status: "COMPLETED", createdAt: new Date() },
+                    { id: "DOC-1002", filename: "user_manifest_v2.json", format: "JSON", sizeMb: 0.8, status: "PROCESSING", createdAt: new Date() },
+                    { id: "DOC-1003", filename: "architecture_diagram.xml", format: "XML", sizeMb: 12.5, status: "QUEUED", createdAt: new Date() },
+                    { id: "DOC-1004", filename: "legal_contract_final.docx", format: "DOCX", sizeMb: 2.1, status: "FAILED", createdAt: new Date() }
+                ];
+
+                this.servers = [
+                    { nodeId: "SRV-01", name: "US-East Primary Node", loadPercentage: 45, isOnline: true },
+                    { nodeId: "SRV-02", name: "EU-Central Worker Node", loadPercentage: 82, isOnline: true },
+                    { nodeId: "SRV-03", name: "AP-East Secondary Node", loadPercentage: 0, isOnline: false }
+                ];
+
+                this.addLog("INFO", "System state initialized successfully.");
+                this.addLog("WARNING", "Server node SRV-03 offline for maintenance.");
+            }
+
+            public subscribe(listener: () => void): void {
+                this.listeners.push(listener);
+            }
+
+            private notify(): void {
+                this.listeners.forEach(callback => callback());
+            }
+
+            public getDocuments(): BatchDocument[] {
+                return [...this.documents];
+            }
+
+            public getLogs(): SystemLog[] {
+                return [...this.logs];
+            }
+
+            public getServers(): ServerNode[] {
+                return [...this.servers];
+            }
+
+            public addDocument(doc: BatchDocument): void {
+                this.documents.unshift(doc);
+                this.addLog("INFO", `Document added to processing queue: ${doc.filename}`);
+                this.notify();
+            }
+
+            public removeDocument(id: string): void {
+                this.documents = this.documents.filter(d => d.id !== id);
+                this.addLog("WARNING", `Document removed: ${id}`);
+                this.notify();
+            }
+
+            public addLog(severity: LogSeverity, message: string): void {
+                const newLog: SystemLog = {
+                    id: `LOG-${Math.floor(1000 + Math.random() * 9000)}`,
+                    timestamp: new Date(),
+                    severity,
+                    message
+                };
+                this.logs.unshift(newLog);
+                this.notify();
+            }
+
+            public clearLogs(): void {
+                this.logs = [];
+                this.notify();
+            }
+        }
+
+        // Initialize Global State
+        const appState = new SystemStateManager();
+
+        // ==========================================
+        // 3. DOCUMENT PROCESSOR SERVICE (FACTORY PATTERN)
+        // ==========================================
+
+        class DocumentFactory {
+            private static counter: number = 1005;
+
+            public static createRandomDocument(): BatchDocument {
+                const formats: DocumentFormat[] = ["PDF", "DOCX", "JSON", "XML"];
+                const statuses: ProcessStatus[] = ["QUEUED", "PROCESSING", "COMPLETED"];
+                
+                const chosenFormat = formats[Math.floor(Math.random() * formats.length)];
+                const chosenStatus = statuses[Math.floor(Math.random() * statuses.length)];
+                
+                const id = `DOC-${this.counter++}`;
+                const filename = `data_export_${Math.floor(Math.random() * 100)}.${chosenFormat.toLowerCase()}`;
+                const sizeMb = parseFloat((Math.random() * 15 + 0.1).toFixed(1));
+
+                return {
+                    id,
+                    filename,
+                    format: chosenFormat,
+                    sizeMb,
+                    status: chosenStatus,
+                    createdAt: new Date()
+                };
+            }
+        }
+
+        // ==========================================
+        // 4. UI RENDERER & INTERACTIVE LOGIC
+        // ==========================================
+
+        class DashboardUI {
+            private docTableBody: HTMLElement;
+            private logContainer: HTMLElement;
+            private metricDocs: HTMLElement;
+            private logFilterSelect: HTMLSelectElement;
+
+            constructor() {
+                this.docTableBody = document.getElementById("document-table-body")!;
+                this.logContainer = document.getElementById("log-container")!;
+                this.metricDocs = document.getElementById("metric-docs")!;
+                this.logFilterSelect = document.getElementById("log-filter") as HTMLSelectElement;
+
+                this.bindEvents();
+                appState.subscribe(() => this.render());
+            }
+
+            private bindEvents(): void {
+                // Add Document Button
+                document.getElementById("btn-add-doc")?.addEventListener("click", () => {
+                    const newDoc = DocumentFactory.createRandomDocument();
+                    appState.addDocument(newDoc);
+                });
+
+                // Clear Logs Button
+                document.getElementById("btn-clear-logs")?.addEventListener("click", () => {
+                    appState.clearLogs();
+                });
+
+                // Dispatch Job Button
+                document.getElementById("btn-dispatch-job")?.addEventListener("click", () => {
+                    appState.addLog("INFO", "Manual job execution dispatched to active nodes.");
+                });
+
+                // Trigger Error Button
+                document.getElementById("btn-trigger-error")?.addEventListener("click", () => {
+                    appState.addLog("ERROR", "Execution failure reported in processing node SRV-02.");
+                });
+
+                // Refresh Button
+                document.getElementById("btn-refresh")?.addEventListener("click", () => {
+                    appState.addLog("INFO", "Engine state re-synchronized.");
+                });
+
+                // Filter Change
+                this.logFilterSelect?.addEventListener("change", () => {
+                    this.renderLogs();
+                });
+
+                // Navigation Items Interaction
+                const navItems = document.querySelectorAll(".nav-item");
+                navItems.forEach(item => {
+                    item.addEventListener("click", (e) => {
+                        navItems.forEach(i => i.classList.remove("active"));
+                        (e.target as HTMLElement).classList.add("active");
+                        const navName = (e.target as HTMLElement).innerText;
+                        appState.addLog("INFO", `Navigated to section: ${navName}`);
+                    });
+                });
+            }
+
+            private getStatusBadgeClass(status: ProcessStatus): string {
+                switch (status) {
+                    case "COMPLETED": return "badge-active";
+                    case "PROCESSING": return "badge-pending";
+                    case "QUEUED": return "badge-pending";
+                    case "FAILED": return "badge-failed";
+                }
+            }
+
+            public render(): void {
+                this.renderDocuments();
+                this.renderLogs();
+                this.renderMetrics();
+            }
+
+            private renderDocuments(): void {
+                const docs = appState.getDocuments();
+                this.docTableBody.innerHTML = "";
+
+                if (docs.length === 0) {
+                    this.docTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No active documents in processing queue.</td></tr>`;
+                    return;
+                }
+
+                docs.forEach(doc => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td><strong>${doc.id}</strong></td>
+                        <td>${doc.filename}</td>
+                        <td>${doc.format}</td>
+                        <td>${doc.sizeMb} MB</td>
+                        <td><span class="badge-status ${this.getStatusBadgeClass(doc.status)}">${doc.status}</span></td>
+                        <td>
+                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="window.deleteDocument('${doc.id}')">Delete</button>
+                        </td>
+                    `;
+                    this.docTableBody.appendChild(row);
+                });
+            }
+
+            private renderLogs(): void {
+                const selectedSeverity = this.logFilterSelect.value;
+                let logs = appState.getLogs();
+
+                if (selectedSeverity !== "ALL") {
+                    logs = logs.filter(l => l.severity === selectedSeverity);
+                }
+
+                this.logContainer.innerHTML = "";
+
+                if (logs.length === 0) {
+                    this.logContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 10px;">No logs match criteria.</div>`;
+                    return;
+                }
+
+                logs.forEach(log => {
+                    const item = document.createElement("div");
+                    item.className = `log-item ${log.severity === 'ERROR' ? 'error' : ''}`;
+                    
+                    const timeStr = log.timestamp.toLocaleTimeString();
+                    
+                    item.innerHTML = `
+                        <div class="log-timestamp">[${timeStr}] Severity: ${log.severity}</div>
+                        <div class="log-message">${log.message}</div>
+                    `;
+                    this.logContainer.appendChild(item);
+                });
+            }
+
+            private renderMetrics(): void {
+                const docs = appState.getDocuments();
+                this.metricDocs.textContent = docs.length.toString();
+            }
+        }
+
+        // Global helper for row actions
+        (window as any).deleteDocument = (id: string): void => {
+            appState.removeDocument(id);
+        };
+
+        // Initialize application on DOM ready
+        document.addEventListener("DOMContentLoaded", () => {
+            const ui = new DashboardUI();
+            ui.render();
         });
 
-        this.sistema.registrarPedido(canal, prodCodigo, capasOmitir, this.minutoSimulado);
-        this.ocultarError();
-        this.actualizarPantalla();
-      } catch (err) {
-        this.mostrarError(err.message);
-      }
-    });
-
-    document.getElementById('sel-producto').addEventListener('change', (e) => {
-      this.renderizarOpcionesSin(e.target.value);
-    });
-
-    document.getElementById('btn-siguiente-pedido').addEventListener('click', () => {
-      try {
-        const res = this.sistema.siguientePedido();
-        if (!res) {
-          this.mostrarError("No hay pedidos pendientes en ninguna de las colas.");
-        } else {
-          this.ocultarError();
-          this.actualizarPantalla();
-          document.querySelector('[data-tab="sec-armado"]').click();
-        }
-      } catch (err) {
-        this.mostrarError(err.message);
-      }
-    });
-
-    document.getElementById('btn-colocar-capa').addEventListener('click', () => {
-      try {
-        const capa = document.getElementById('sel-capa-colocar').value;
-        const res = this.sistema.colocarCapa(capa);
-        if (res.advertenciaR5) {
-          this.mostrarError(res.advertenciaR5);
-        } else {
-          this.ocultarError();
-        }
-        this.actualizarPantalla();
-      } catch (err) {
-        this.mostrarError(err.message);
-      }
-    });
-
-    document.getElementById('btn-retirar-capa').addEventListener('click', () => {
-      try {
-        this.sistema.retirarCapa();
-        this.ocultarError();
-        this.actualizarPantalla();
-      } catch (err) {
-        this.mostrarError(err.message);
-      }
-    });
-
-    document.getElementById('btn-verificar').addEventListener('click', () => {
-      try {
-        const verif = this.sistema.verificar();
-        if (verif.esCorrecto) {
-          alert("✅ VERIFICACIÓN EXITOSA: La pila coincide exactamente con la receta esperada.");
-        } else {
-          alert(`❌ VERIFICACIÓN FALLIDA:\nFaltantes: ${verif.faltantes.join(', ') || 'Ninguna'}\nSobrantes: ${verif.sobrantes.join(', ') || 'Ninguna'}`);
-        }
-      } catch (err) {
-        this.mostrarError(err.message);
-      }
-    });
-
-    document.getElementById('btn-marcar-listo').addEventListener('click', () => {
-      try {
-        this.sistema.marcarListo(this.minutoSimulado);
-        this.ocultarError();
-        this.actualizarPantalla();
-        alert("🎉 Pedido finalizado con éxito.");
-      } catch (err) {
-        this.mostrarError(err.message);
-      }
-    });
-
-    document.getElementById('btn-cancelar-pedido').addEventListener('click', () => {
-      try {
-        this.sistema.cancelarPedido();
-        this.ocultarError();
-        this.actualizarPantalla();
-      } catch (err) {
-        this.mostrarError(err.message);
-      }
-    });
-  }
-
-  cargarDatosEjemplo() {
-    try {
-      this.sistema.cargarCatalogo([
-        {
-          codigo: 'BRG-01',
-          nombre: 'Hamburguesa Clásica',
-          receta: ['pan_base', 'salsa', 'carne', 'queso', 'cebolla', 'tomate', 'pan_tapa']
-        },
-        {
-          codigo: 'BRG-02',
-          nombre: 'Doble Queso Bacon',
-          receta: ['pan_base', 'salsa', 'carne', 'queso', 'carne', 'queso', 'bacon', 'pan_tapa']
-        },
-        {
-          codigo: 'PER-01',
-          nombre: 'Perro Caliente Especial',
-          receta: ['pan_perro', 'salchicha', 'queso', 'cebolla', 'papas_ripio', 'salsa']
-        }
-      ]);
-      this.actualizarSelectProductos();
-    } catch (err) {
-      // Catálogo ya inicializado
-    }
-  }
-
-  actualizarSelectProductos() {
-    const sel = document.getElementById('sel-producto');
-    sel.innerHTML = '';
-    const productos = this.sistema.catálogo.aArray();
-    productos.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.codigo;
-      opt.text = `${p.codigo} - ${p.nombre}`;
-      sel.appendChild(opt);
-    });
-
-    if (productos.length > 0) {
-      this.renderizarOpcionesSin(productos[0].codigo);
-    }
-  }
-
-  renderizarOpcionesSin(codigoProd) {
-    const box = document.getElementById('box-capas-omitir');
-    box.innerHTML = '';
-    const prod = this.sistema.catálogo.buscar(p => p.codigo === codigoProd);
-    if (!prod) return;
-
-    prod.receta.aArray().forEach(capa => {
-      const lbl = document.createElement('label');
-      lbl.style.display = 'inline-flex';
-      lbl.style.alignItems = 'center';
-      lbl.style.gap = '4px';
-      lbl.style.background = '#334155';
-      lbl.style.padding = '4px 8px';
-      lbl.style.borderRadius = '4px';
-      lbl.innerHTML = `<input type="checkbox" class="chk-omitir" value="${capa}"> ${capa}`;
-      box.appendChild(lbl);
-    });
-  }
-
-  mostrarError(msj) {
-    const el = document.getElementById('alert-global');
-    el.innerText = msj;
-    el.style.display = 'block';
-  }
-
-  ocultarError() {
-    const el = document.getElementById('alert-global');
-    el.style.display = 'none';
-  }
-
-  actualizarPantalla() {
-    // 1. Catálogo
-    const catUI = document.getElementById('lista-catalogo');
-    catUI.innerHTML = '';
-    this.sistema.catálogo.aArray().forEach(p => {
-      catUI.innerHTML += `
-        <div style="background:#0f172a; padding:10px; margin-bottom:8px; border-radius:6px; border:1px solid var(--border-color);">
-          <strong>${p.codigo} - ${p.nombre}</strong>
-          <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">
-            Receta: ${p.receta.aArray().map((c, i) => `${i + 1}.${c}`).join(' ➔ ')}
-          </div>
-        </div>
-      `;
-    });
-
-    // 2. Colas
-    const colaM = this.sistema.colaMostrador.aArrayEnOrden();
-    const colaMUI = document.getElementById('cola-mostrador-ui');
-    colaMUI.innerHTML = colaM.length === 0 ? '<em style="color:var(--text-muted)">Cola vacía</em>' : '';
-    colaM.forEach((ped, idx) => {
-      colaMUI.innerHTML += `
-        <div class="cola-item ${idx === 0 ? 'frente' : ''}">
-          <strong>#${ped.numero}</strong><br>
-          <small>${ped.productoCodigo}</small><br>
-          <small style="color:var(--accent-amber)">Min: ${ped.minutoLlegada}</small>
-        </div>
-      `;
-    });
-    document.getElementById('cant-mostrador').innerText = `${this.sistema.colaMostrador.obtenerLongitud()} / 5`;
-
-    const colaD = this.sistema.colaDomicilio.aArrayEnOrden();
-    const colaDUI = document.getElementById('cola-domicilio-ui');
-    colaDUI.innerHTML = colaD.length === 0 ? '<em style="color:var(--text-muted)">Cola vacía</em>' : '';
-    colaD.forEach((ped, idx) => {
-      colaDUI.innerHTML += `
-        <div class="cola-item ${idx === 0 ? 'frente' : ''}">
-          <strong>#${ped.numero}</strong><br>
-          <small>${ped.productoCodigo}</small><br>
-          <small style="color:var(--accent-amber)">Min: ${ped.minutoLlegada}</small>
-        </div>
-      `;
-    });
-    document.getElementById('cant-domicilio').innerText = `${this.sistema.colaDomicilio.obtenerLongitud()} / 5`;
-
-    document.getElementById('lbl-r2-counter').innerText = `${this.sistema.contadorMostradorAtendidos} / 3`;
-
-    // 3. Estación Armado
-    const pedActivo = this.sistema.pedidoEnArmado;
-    const infoActivo = document.getElementById('info-pedido-activo');
-    const recetaExpUI = document.getElementById('receta-esperada-ui');
-    const selCapa = document.getElementById('sel-capa-colocar');
-
-    selCapa.innerHTML = '';
-    const ingreds = ['pan_base', 'pan_tapa', 'pan_perro', 'salsa', 'carne', 'queso', 'cebolla', 'tomate', 'bacon', 'salchicha', 'papas_ripio'];
-    ingreds.forEach(ing => {
-      const opt = document.createElement('option');
-      opt.value = ing;
-      opt.text = ing;
-      selCapa.appendChild(opt);
-    });
-
-    if (!pedActivo) {
-      infoActivo.innerHTML = '<em style="color:var(--text-muted)">No hay ningún pedido activo en armado.</em>';
-      recetaExpUI.innerHTML = '-';
-    } else {
-      const recetaEsperada = this.sistema.obtenerRecetaEsperada(pedActivo);
-      infoActivo.innerHTML = `
-        <p><strong>Pedido #${pedActivo.numero}</strong> (${pedActivo.canal})</p>
-        <p>Producto: ${pedActivo.productoCodigo}</p>
-        <p>Sin: ${pedActivo.sin.aArray().join(', ') || 'Ninguna'}</p>
-        <p>Ingreso: Minuto ${pedActivo.minutoLlegada}</p>
-      `;
-
-      recetaExpUI.innerHTML = recetaEsperada.map((capa, idx) => `
-        <div style="padding:6px; background:#0f172a; margin-bottom:4px; border-radius:4px; border-left:3px solid var(--accent-blue)">
-          ${idx + 1}. ${capa}
-        </div>
-      `).join('');
-    }
-
-    // Pila LIFO
-    const pilaUI = document.getElementById('pila-ui');
-    pilaUI.innerHTML = '';
-    const capasPila = this.sistema.pilaArmado.aArrayDesdeTope();
-    
-    if (capasPila.length === 0) {
-      pilaUI.innerHTML = '<em style="color:var(--text-muted); margin:auto;">Pila Vacía (Base)</em>';
-    } else {
-      capasPila.forEach((capa, idx) => {
-        const div = document.createElement('div');
-        div.className = `capa-block ${idx === 0 ? 'tope' : ''}`;
-        div.innerText = `${capa} ${idx === 0 ? '(TOPE)' : ''}`;
-        pilaUI.appendChild(div);
-      });
-    }
-
-    // 4. Métricas y Bitácora
-    const metricsUI = document.getElementById('metrics-ui');
-    const historial = this.sistema.historialPedidos.aArray();
-    const cumplidos = historial.filter(h => h.cumplePromesa).length;
-    const porcCumpli = historial.length > 0 ? ((cumplidos / historial.length) * 100).toFixed(1) : '100';
-
-    metricsUI.innerHTML = `
-      <p>Atendidos Mostrador: <strong>${this.sistema.totalAtendidosMostrador}</strong></p>
-      <p>Atendidos Domicilio: <strong>${this.sistema.totalAtendidosDomicilio}</strong></p>
-      <p>Rechazados Mostrador (Cola Llena R7): <strong style="color:var(--accent-red)">${this.sistema.totalRechazadosMostrador}</strong></p>
-      <p>Rechazados Domicilio (Cola Llena R7): <strong style="color:var(--accent-red)">${this.sistema.totalRechazadosDomicilio}</strong></p>
-      <hr style="border-color:var(--border-color); margin:8px 0;">
-      <p>Cumplimiento Tiempo Promesa (R8): <strong>${porcCumpli}%</strong></p>
-      <p>Errores de Armado Detectados (R5): <strong style="color:var(--accent-amber)">${this.sistema.erroresArmadoContador}</strong></p>
-      <p>Total Capas Desperdiciadas (R5/R6): <strong style="color:var(--accent-red)">${this.sistema.listaDesperdicios.obtenerLongitud()}</strong></p>
-    `;
-
-    const bitacoraUI = document.getElementById('bitacora-ui');
-    bitacoraUI.innerHTML = this.sistema.bitacora.aArray().map(linea => `<div>${linea}</div>`).join('');
-    bitacoraUI.scrollTop = bitacoraUI.scrollHeight;
-  }
-}
-
-// Inicialización de la aplicación
-window.addEventListener('DOMContentLoaded', () => {
-  new InterfazCocina();
-});
-</script>
-
+    </script>
 </body>
 </html>
