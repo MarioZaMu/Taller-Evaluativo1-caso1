@@ -1,910 +1,996 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise System Dashboard</title>
-    <!-- Babel standalone for runtime TypeScript compilation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-        /* ==========================================
-           1. CSS VARIABLES & THEME SETUP
-           Palette: Red, Yellow, White & Neutral Dark
-           ========================================== */
-        :root {
-            --bg-main: #f4f5f7;
-            --bg-card: #ffffff;
-            --primary-red: #d32f2f;
-            --primary-red-hover: #b71c1c;
-            --primary-red-light: #ffebee;
-            --accent-yellow: #fbc02d;
-            --accent-yellow-light: #fffde7;
-            --accent-yellow-dark: #f57f17;
-            --text-dark: #212121;
-            --text-muted: #666666;
-            --border-color: #e0e0e0;
-            --border-red: #ef5350;
-            --border-yellow: #fdd835;
-            --sidebar-width: 260px;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
-            --radius-sm: 6px;
-            --radius-md: 10px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-dark);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* ==========================================
-           2. SIDEBAR NAVIGATION
-           ========================================== */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--primary-red);
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 1.5rem 1rem;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.15);
-            z-index: 10;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 2rem;
-            padding: 0 0.5rem;
-        }
-
-        .brand-logo {
-            width: 36px;
-            height: 36px;
-            background-color: var(--accent-yellow);
-            color: var(--primary-red);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .brand-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .nav-item {
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .nav-item:hover {
-            background-color: rgba(255, 255, 255, 0.15);
-        }
-
-        .nav-item.active {
-            background-color: var(--accent-yellow);
-            color: var(--text-dark);
-            font-weight: 700;
-        }
-
-        .user-profile {
-            background-color: rgba(0, 0, 0, 0.15);
-            padding: 12px;
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-left: 4px solid var(--accent-yellow);
-        }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            background-color: #ffffff;
-            color: var(--primary-red);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        .user-details {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-name {
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .user-role {
-            font-size: 0.75rem;
-            opacity: 0.8;
-        }
-
-        /* ==========================================
-           3. MAIN LAYOUT & HEADER
-           ========================================== */
-        .main-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .top-header {
-            background-color: var(--bg-card);
-            padding: 1rem 2rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .header-title {
-            font-size: 1.4rem;
-            color: var(--primary-red);
-            font-weight: 700;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .status-badge {
-            background-color: var(--accent-yellow-light);
-            border: 1px solid var(--accent-yellow);
-            color: var(--accent-yellow-dark);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 2rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        /* ==========================================
-           4. METRIC CARDS SECTION
-           ========================================== */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .metric-card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-top: 4px solid var(--primary-red);
-            border-radius: var(--radius-md);
-            padding: 1.2rem;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .metric-card.yellow-accent {
-            border-top-color: var(--accent-yellow);
-        }
-
-        .metric-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .metric-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        .metric-subtext {
-            font-size: 0.75rem;
-            color: var(--primary-red);
-            font-weight: 500;
-        }
-
-        /* ==========================================
-           5. DASHBOARD GRID PANELS
-           ========================================== */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 1.5rem;
-        }
-
-        .panel {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 1.5rem;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.2rem;
-            padding-bottom: 0.8rem;
-            border-bottom: 2px solid var(--primary-red-light);
-        }
-
-        .panel-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary-red);
-        }
-
-        /* ==========================================
-           6. FORM CONTROLS & BUTTONS
-           ========================================== */
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-
-        .form-control {
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-red);
-            box-shadow: 0 0 0 2px var(--primary-red-light);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 10px 18px;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background-color: var(--primary-red);
-            color: #ffffff;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-red-hover);
-        }
-
-        .btn-accent {
-            background-color: var(--accent-yellow);
-            color: var(--text-dark);
-        }
-
-        .btn-accent:hover {
-            background-color: var(--accent-yellow-dark);
-            color: #ffffff;
-        }
-
-        .btn-secondary {
-            background-color: #e0e0e0;
-            color: var(--text-dark);
-        }
-
-        .btn-secondary:hover {
-            background-color: #d6d6d6;
-        }
-
-        /* ==========================================
-           7. DATA TABLE STYLING
-           ========================================== */
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.9rem;
-        }
-
-        .data-table th {
-            background-color: var(--primary-red-light);
-            color: var(--primary-red);
-            padding: 12px;
-            font-weight: 700;
-            border-bottom: 2px solid var(--border-red);
-        }
-
-        .data-table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .data-table tr:hover {
-            background-color: var(--accent-yellow-light);
-        }
-
-        .badge-status {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            display: inline-block;
-        }
-
-        .badge-active {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .badge-pending {
-            background-color: var(--accent-yellow-light);
-            color: var(--accent-yellow-dark);
-            border: 1px solid var(--accent-yellow);
-        }
-
-        .badge-failed {
-            background-color: var(--primary-red-light);
-            color: var(--primary-red);
-        }
-
-        /* ==========================================
-           8. ACTIVITY LOG & ALERTS
-           ========================================== */
-        .log-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 280px;
-            overflow-y: auto;
-        }
-
-        .log-item {
-            padding: 10px;
-            background-color: #fafafa;
-            border-left: 3px solid var(--accent-yellow);
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
-
-        .log-item.error {
-            border-left-color: var(--primary-red);
-            background-color: var(--primary-red-light);
-        }
-
-        .log-timestamp {
-            color: var(--text-muted);
-            font-size: 0.7rem;
-            margin-bottom: 2px;
-        }
-
-        .log-message {
-            font-weight: 500;
-        }
-
-        .alert-box {
-            background-color: var(--accent-yellow-light);
-            border: 1px solid var(--accent-yellow);
-            padding: 12px;
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
-            color: var(--accent-yellow-dark);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Responsive tweaks */
-        @media (max-width: 900px) {
-            body {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-                height: auto;
-            }
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caso de Estudio 1 - FastFood Kitchen</title>
 </head>
 <body>
 
-    <!-- SIDEBAR NAVIGATION -->
-    <aside class="sidebar">
-        <div>
-            <div class="brand">
-                <div class="brand-logo">TS</div>
-                <div class="brand-title">ControlHub</div>
-            </div>
-            <ul class="nav-list">
-                <li class="nav-item active" id="nav-dashboard">Dashboard</li>
-                <li class="nav-item" id="nav-documents">Document Processing</li>
-                <li class="nav-item" id="nav-servers">Server Nodes</li>
-                <li class="nav-item" id="nav-logs">System Logs</li>
-                <li class="nav-item" id="nav-settings">Settings</li>
-            </ul>
+<script>
+/**
+ * TALLER CON FRONTEND - CASO DE ESTUDIO 1: FAST FOOD KITCHEN
+ * Custom Data Structures: Linked List + Circular Queue O(1) + LIFO Stack O(1)
+ * Everything in a single self-contained file for Sublime Text / TypeScript.
+ */
+
+// ============================================================================
+// 1. ESTRUCTURAS DE DATOS PROPIAS (NATIVE ARRAY USE STRICTLY PROHIBITED)
+// ============================================================================
+
+class ListNode {
+  constructor(info) {
+    this.info = info;
+    this.sig = null;
+  }
+}
+
+/** Linked List Simple para el Catálogo y Recipes */
+class LinkedList {
+  constructor() {
+    this.cabeza = null;
+    this.size = 0;
+  }
+
+  insertAtEnd(elem) {
+    const nuevo = new ListNode(elem);
+    if (!this.cabeza) {
+      this.cabeza = nuevo;
+    } else {
+      let aux = this.cabeza;
+      while (aux.sig !== null) {
+        aux = aux.sig;
+      }
+      aux.sig = nuevo;
+    }
+    this.size++;
+  }
+
+  getLength() {
+    return this.size;
+  }
+
+  getAt(pos) {
+    if (pos < 0 || pos >= this.size) return null;
+    let aux = this.cabeza;
+    let idx = 0;
+    while (aux !== null && idx < pos) {
+      aux = aux.sig;
+      idx++;
+    }
+    return aux ? aux.info : null;
+  }
+
+  exists(predicado) {
+    let aux = this.cabeza;
+    while (aux !== null) {
+      if (predicado(aux.info)) return true;
+      aux = aux.sig;
+    }
+    return false;
+  }
+
+  find(predicado) {
+    let aux = this.cabeza;
+    while (aux !== null) {
+      if (predicado(aux.info)) return aux.info;
+      aux = aux.sig;
+    }
+    return null;
+  }
+
+  toArray() {
+    const arr = [];
+    let aux = this.cabeza;
+    while (aux !== null) {
+      arr.push(aux.info);
+      aux = aux.sig;
+    }
+    return arr;
+  }
+}
+
+/** Circular Queue basada en Arreglo Estático de Tamaño Fijo - O(1) */
+class CircularQueue {
+  constructor(capacity) {
+    this.capacity = capacity;
+    this.array = new Array(capacity).fill(null);
+    this.front = 0;
+    this.rear = 0;
+    this.count = 0;
+  }
+
+  isFull() {
+    return this.count === this.capacity;
+  }
+
+  isEmpty() {
+    return this.count === 0;
+  }
+
+  enqueue(item) {
+    if (this.isFull()) return false;
+    this.array[this.rear] = item;
+    this.rear = (this.rear + 1) % this.capacity;
+    this.count++;
+    return true;
+  }
+
+  dequeue() {
+    if (this.isEmpty()) return null;
+    const elem = this.array[this.front];
+    this.array[this.front] = null;
+    this.front = (this.front + 1) % this.capacity;
+    this.count--;
+    return elem;
+  }
+
+  peekFront() {
+    if (this.isEmpty()) return null;
+    return this.array[this.front];
+  }
+
+  getLength() {
+    return this.count;
+  }
+
+  getCapacity() {
+    return this.capacity;
+  }
+
+  toArrayInOrder() {
+    const arr = [];
+    let idx = this.front;
+    for (let i = 0; i < this.count; i++) {
+      const item = this.array[idx];
+      if (item !== null) arr.push(item);
+      idx = (idx + 1) % this.capacity;
+    }
+    return arr;
+  }
+}
+
+class StackNode {
+  constructor(info) {
+    this.info = info;
+    this.sig = null;
+  }
+}
+
+/** LIFO Stack basada en Nodos - O(1) */
+class LinkedStack {
+  constructor() {
+    this.top = null;
+    this.size = 0;
+  }
+
+  push(elem) {
+    const nuevo = new StackNode(elem);
+    nuevo.sig = this.top;
+    this.top = nuevo;
+    this.size++;
+  }
+
+  pop() {
+    if (this.isEmpty()) return null;
+    const item = this.top.info;
+    this.top = this.top.sig;
+    this.size--;
+    return item;
+  }
+
+  peek() {
+    return this.top ? this.top.info : null;
+  }
+
+  isEmpty() {
+    return this.top === null;
+  }
+
+  getLength() {
+    return this.size;
+  }
+
+  toArrayFromTop() {
+    const arr = [];
+    let aux = this.top;
+    while (aux !== null) {
+      arr.push(aux.info);
+      aux = aux.sig;
+    }
+    return arr;
+  }
+
+  clear() {
+    const removed = [];
+    while (!this.isEmpty()) {
+      const elem = this.pop();
+      if (elem !== null) removed.push(elem);
+    }
+    return removed;
+  }
+}
+
+// ============================================================================
+// 2. BUSINESS LOGIC (KITCHEN SYSTEM)
+// ============================================================================
+
+class KitchenSystem {
+  constructor(capacidadMaxQueues = 5) {
+    this.catalog = new LinkedList();
+    this.counterQueue = new CircularQueue(capacidadMaxQueues);
+    this.deliveryQueue = new CircularQueue(capacidadMaxQueues);
+    this.assemblyStack = new LinkedStack();
+    
+    this.activeOrder = null;
+    this.counterOrdersServed = 0; // Regla R2 (3:1)
+    this.orderSequence = 1;
+
+    // Métricas
+    this.totalCounterServed = 0;
+    this.totalDeliveryServed = 0;
+    this.totalCounterRejected = 0;
+    this.totalDeliveryRejected = 0;
+    this.assemblyErrors = 0;
+    this.wasteList = new LinkedList();
+    this.orderHistory = new LinkedList();
+    this.log = new LinkedList();
+
+    this.logEvent("Sistema inicializado. Queues configuradas con capacity C=" + capacidadMaxQueues);
+  }
+
+  logEvent(message) {
+    const time = new Date().toLocaleTimeString();
+    this.log.insertAtEnd(`[${time}] ${message}`);
+  }
+
+  // RF-01: loadCatalog(datos)
+  loadCatalog(products) {
+    for (const p of products) {
+      if (!p.code || p.receta.length === 0) {
+        throw new Error("R1-ERR: Invalid product or empty recipe.");
+      }
+      if (this.catalog.exists(prod => prod.codigo === p.code)) {
+        throw new Error(`R1-ERR: The product code ${p.code} ya exists.`);
+      }
+
+      const recipeList = new LinkedList();
+      for (const capa of p.receta) {
+        recipeList.insertAtEnd(capa.trim().toLowerCase());
+      }
+
+      this.catalog.insertAtEnd({
+        code: p.code,
+        nombre: p.nombre,
+        receta: recipeList
+      });
+    }
+    this.logEvent(`Catalog loaded with ${products.length} products.`);
+  }
+
+  // RF-02: registerOrder(canal, codigo, sin[], minute)
+  registerOrder(canal, productCode, skippedLayers, minute) {
+    const prod = this.catalog.find(p => p.code === productCode);
+    if (!prod) throw new Error("R2-ERR: El producto seleccionado no exists en el catalog.");
+
+    const sinLista = new LinkedList();
+    for (const s of skippedLayers) {
+      const searchedLayer = s.trim().toLowerCase();
+      if (!prod.receta.exists(c => c === searchedLayer)) {
+        throw new Error(`R2-ERR: The layer '${s}' does not belong to the product recipe.`);
+      }
+      sinLista.insertAtEnd(searchedLayer);
+    }
+
+    const newOrder = {
+      numero: this.orderSequence++,
+      channel: channel,
+      productCode: productCode,
+      sin: sinLista,
+      arrivalMinute: minute,
+      estado: 'QUEUED'
+    };
+
+    // Aplicar R7: Límite de capacity en colas
+    if (canal === 'COUNTER') {
+      if (this.counterQueue.isFull()) {
+        this.totalCounterRejected++;
+        this.logEvent(`REJECTION (R7): COUNTER queue full. Order #${newOrder.numero} rechazado.`);
+        throw new Error("RULE R7: La cola de COUNTER está llena. Rechazar pedido.");
+      }
+      this.counterQueue.enqueue(newOrder);
+    } else {
+      if (this.deliveryQueue.isFull()) {
+        this.totalDeliveryRejected++;
+        this.logEvent(`REJECTION (R7): DELIVERY queue full. Order #${newOrder.numero} rechazado.`);
+        throw new Error("RULE R7: La cola de DELIVERY está llena. Rechazar pedido.");
+      }
+      this.deliveryQueue.enqueue(newOrder);
+    }
+
+    this.logEvent(`Order #${newOrder.numero} (${canal}) ingresó a la cola en el minute ${minute}.`);
+    return newOrder;
+  }
+
+  // RF-03: nextOrder()
+  nextOrder() {
+    if (this.activeOrder !== null) {
+      throw new Error("ERR: There is already an order at the assembly station. Finish or cancel it first.");
+    }
+
+    if (this.counterQueue.isEmpty() && this.deliveryQueue.isEmpty()) {
+      return null;
+    }
+
+    let elegido = null;
+    let motivo = "";
+
+    // Aplicar Regla R2 (3:1)
+    if (!this.counterQueue.isEmpty() && this.counterOrdersServed < 3) {
+      elegido = this.counterQueue.dequeue();
+      this.counterOrdersServed++;
+      motivo = `Served from COUNTER (R2 Count: ${this.counterOrdersServed}/3).`;
+    } else if (!this.deliveryQueue.isEmpty()) {
+      elegido = this.deliveryQueue.dequeue();
+      this.counterOrdersServed = 0; // Reinicia al atender domicilio
+      motivo = `Served from DELIVERY (R2 ratio reset to 0/3).`;
+    } else if (!this.counterQueue.isEmpty()) {
+      elegido = this.counterQueue.dequeue();
+      this.counterOrdersServed++;
+      motivo = `Served from COUNTER (Delivery queue empty).`;
+    }
+
+    if (elegido) {
+      elegido.estado = 'IN ASSEMBLY';
+      this.activeOrder = elegido;
+      this.assemblyStack.clear();
+      this.logEvent(`Siguiente Pedido: #${elegido.numero} moved to IN ASSEMBLY. ${motivo}`);
+      return { pedido: elegido, motivo };
+    }
+
+    return null;
+  }
+
+  getExpectedRecipe(pedido) {
+    const prod = this.catalog.find(p => p.code === pedido.productCode);
+    if (!prod) return [];
+    
+    const originalRecipe = prod.receta.toArray();
+    const skipArray = pedido.sin.toArray();
+
+    return originalRecipe.filter(capa => !skipArray.includes(capa));
+  }
+
+  // RF-04: addLayer(capa)
+  addLayer(capa) {
+    if (!this.activeOrder) throw new Error("ERR: There is no active order at the station.");
+
+    const cleanLayer = capa.trim().toLowerCase();
+    const expectedRecipe = this.getExpectedRecipe(this.activeOrder);
+    
+    const currentStep = this.assemblyStack.getLength();
+    let warning = undefined;
+
+    if (currentStep >= expectedRecipe.length || expectedRecipe[currentStep] !== cleanLayer) {
+      // Regla R5
+      this.assemblyErrors++;
+      warning = `R5 RULE VIOLATED: The layer '${cleanLayer}' no corresponde al paso ${currentStep + 1} de la receta esperada (${expectedRecipe[currentStep] || 'End of recipe'}).`;
+      this.logEvent(`ASSEMBLY ERROR (R5): Capa '${cleanLayer}' en Order #${this.activeOrder.numero}.`);
+    }
+
+    this.assemblyStack.push(cleanLayer);
+    this.logEvent(`Layer added '${cleanLayer}' en Order #${this.activeOrder.numero}.`);
+    return { exitoso: true, advertenciaR5: warning };
+  }
+
+  // RF-05: removeLayer()
+  removeLayer() {
+    if (!this.activeOrder) throw new Error("ERR: There is no order being assembled.");
+    if (this.assemblyStack.isEmpty()) throw new Error("ERR: The layer stack is empty.");
+
+    const retirada = this.assemblyStack.pop();
+    this.wasteList.insertAtEnd({ capa: retirada, motivo: 'UNSTACKED_CORRECTION' });
+    this.logEvent(`Retirada capa top '${retirada}' del Order #${this.activeOrder.numero}. Registered as waste.`);
+    return retirada;
+  }
+
+  // RF-06: verify()
+  verify() {
+    if (!this.activeOrder) throw new Error("ERR: There is no order being assembled.");
+
+    const expectedRecipe = this.getExpectedRecipe(this.activeOrder);
+    const pilaDesdeTope = this.assemblyStack.toArrayFromTop();
+    const pilaDesdeBase = [...pilaDesdeTope].reverse();
+
+    let isExact = true;
+    if (pilaDesdeBase.length !== expectedRecipe.length) isExact = false;
+
+    for (let i = 0; i < pilaDesdeBase.length; i++) {
+      if (i >= expectedRecipe.length || pilaDesdeBase[i] !== expectedRecipe[i]) {
+        isExact = false;
+        break;
+      }
+    }
+
+    const missing = [];
+    if (pilaDesdeBase.length < expectedRecipe.length) {
+      for (let i = pilaDesdeBase.length; i < expectedRecipe.length; i++) {
+        missing.push(expectedRecipe[i]);
+      }
+    }
+
+    const extra = [];
+    if (pilaDesdeBase.length > expectedRecipe.length) {
+      for (let i = expectedRecipe.length; i < pilaDesdeBase.length; i++) {
+        extra.push(pilaDesdeBase[i]);
+      }
+    }
+
+    return { esCorrecto: isExact, missing, extra, placed: pilaDesdeBase };
+  }
+
+  // RF-07: markReady()
+  markReady(minutoActual) {
+    if (!this.activeOrder) throw new Error("ERR: There is no order at the assembly station.");
+
+    const verificacion = this.verify();
+    if (!verificacion.esCorrecto) {
+      throw new Error("R4 RULE VIOLATED: El producto no coincide exactamente con la receta esperada. Corrija las capas.");
+    }
+
+    const ped = this.activeOrder;
+    ped.estado = 'READY';
+    ped.completionMinute = minutoActual;
+
+    const totalTime = minutoActual - ped.arrivalMinute;
+    const limit = order.channel === 'COUNTER' ? 8 : 20;
+    ped.meetsPromise = totalTime <= limit;
+
+    if (order.channel === 'COUNTER') this.totalCounterServed++;
+    else this.totalDeliveryServed++;
+
+    this.orderHistory.insertAtEnd(ped);
+    this.logEvent(`Order #${ped.numero} MARCADO COMO READY en min ${minutoActual}. Time: ${totalTime}m (${ped.meetsPromise ? 'MEETS R8' : 'FAILS R8'}).`);
+    
+    this.activeOrder = null;
+    this.assemblyStack.clear();
+  }
+
+  // RF-08: cancelOrder()
+  cancelOrder() {
+    if (!this.activeOrder) throw new Error("ERR: There is no order to cancel.");
+
+    const ped = this.activeOrder;
+    ped.estado = 'CANCELLED';
+
+    const wastedLayers = this.assemblyStack.clear();
+    for (const c of wastedLayers) {
+      this.wasteList.insertAtEnd({ capa: c, motivo: 'CANCELLED' });
+    }
+
+    this.orderHistory.insertAtEnd(ped);
+    this.logEvent(`Order #${ped.numero} CANCELLED (R6). ${wastedLayers.length} layers sent to waste.`);
+    this.activeOrder = null;
+  }
+}
+
+// ============================================================================
+// 3. GRAPHICAL INTERFACE AND DOM CONTROLLER
+// ============================================================================
+
+class KitchenInterface {
+  constructor() {
+    this.sistema = new KitchenSystem(5);
+    this.simulatedMinute = 0;
+    this.injectCSS();
+    this.buildDOM();
+    this.loadSampleData();
+    this.updateScreen();
+  }
+
+  injectCSS() {
+    const style = document.createElement('style');
+    style.textContent = `
+      :root {
+        --bg-dark: #2b0b0b;
+        --panel-bg: #4a1717;
+        --accent-blue: #ffffff;
+        --accent-green: #dc2626;
+        --accent-amber: #facc15;
+        --accent-red: #dc2626;
+        --text-light: #ffffff;
+        --text-muted: #fde68a;
+        --border-color: #7f1d1d;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+      body { background-color: var(--bg-dark); color: var(--text-light); min-height: 100vh; display: flex; flex-direction: column; }
+      
+      header { background: #b91c1c; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+      header h1 { font-size: 1.5rem; color: white; display: flex; align-items: center; gap: 10px; }
+      
+      nav { display: flex; gap: 8px; background: #2b0b0b; padding: 8px 2rem; border-bottom: 1px solid var(--border-color); }
+      nav button { background: transparent; border: none; color: var(--text-muted); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.95rem; }
+      nav button.active { background: #b91c1c; color: white; }
+
+      main { flex: 1; padding: 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+      .section { display: none; }
+      .section.active { display: grid; gap: 1.5rem; }
+
+      .card { background: var(--panel-bg); border-radius: 8px; border: 1px solid var(--border-color); padding: 1.25rem; }
+      .card h2 { font-size: 1.15rem; color: var(--accent-blue); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+      .grid-armado { grid-template-columns: 280px 1fr 300px; }
+
+      .form-group { margin-bottom: 1rem; }
+      label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
+      select, input { width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: #2b0b0b; color: white; outline: none; }
+      .btn { background: #b91c1c; border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+      .btn:hover { opacity: 0.9; }
+      .btn-danger { background: var(--accent-red); }
+      .btn-amber { background: var(--accent-amber); color: #000; }
+      .btn-green { background: var(--accent-green); color: #000; }
+
+      .queue-container { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; min-height: 80px; align-items: center; }
+      .queue-item { background: #6b1d1d; padding: 8px 12px; border-radius: 6px; border-left: 4px solid var(--accent-blue); min-width: 120px; text-align: center; }
+      .queue-item.front { border-left-color: var(--accent-green); background: #7f1d1d; }
+
+      .stack-visual { display: flex; flex-direction: column-reverse; background: #2b0b0b; border: 2px dashed var(--border-color); border-radius: 8px; min-height: 320px; padding: 10px; gap: 6px; justify-content: flex-start; }
+      .layer-block { background: #6b1d1d; padding: 10px; border-radius: 4px; text-align: center; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: white; border: 1px solid rgba(255,255,255,0.1); }
+      .layer-block.top { border: 2px solid var(--accent-amber); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+
+      .alert-error { background: #3f0a0a; border: 1px solid var(--accent-red); color: #fca5a5; padding: 10px; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; display: none; }
+      .log-box { background: #2b0b0b; border-radius: 6px; height: 250px; overflow-y: auto; padding: 10px; font-family: monospace; font-size: 0.85rem; color: #a7f3d0; border: 1px solid var(--border-color); }
+
+      .badge { padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+      .badge-counter { background: #b91c1c; color: white; }
+      .badge-delivery { background: #ca8a04; color: white; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  buildDOM() {
+    document.body.innerHTML = `
+      <header>
+        <h1>🍔 FastFood Kitchen Engine</h1>
+        <div style="display:flex; gap:15px; align-items:center;">
+          <span>+ Clock Minute: <strong id="lbl-minute" style="color:var(--accent-amber)">0</strong></span>
+          <button class="btn btn-amber" id="btn-avanzar-minute">+1 Minuto</button>
+          <button class="btn btn-green" id="btn-load-sample">Load Sample Data</button>
         </div>
-        <div class="user-profile">
-            <div class="user-avatar">AD</div>
-            <div class="user-details">
-                <span class="user-name">Administrator</span>
-                <span class="user-role">System Architect</span>
-            </div>
+      </header>
+
+      <nav>
+        <button class="tab-btn active" data-tab="sec-order">1. Order Taking</button>
+        <button class="tab-btn" data-tab="sec-kitchen">2. Kitchen Display (Queues)</button>
+        <button class="tab-btn" data-tab="sec-assembly">3. Assembly Station (LIFO Stack)</button>
+        <button class="tab-btn" data-tab="sec-reports">4. Metrics & Log</button>
+      </nav>
+
+      <main>
+        <div id="global-alert" class="alert-error"></div>
+
+        <div id="sec-order" class="section active grid-2">
+          <div class="card">
+            <h2>Register New Order</h2>
+            <form id="form-order">
+              <div class="form-group">
+                <label>Service Channel</label>
+                <select id="sel-channel">
+                  <option value="COUNTER">Counter (Walk-in)</option>
+                  <option value="DELIVERY">Delivery (External App)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Catalog Product</label>
+                <select id="sel-product"></select>
+              </div>
+              <div class="form-group">
+                <label>Layers to Skip (Without):</label>
+                <div id="box-skip-layers" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+              </div>
+              <button type="submit" class="btn btn-green" style="width:100%">Queue Order</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h2>Product Catalog & Recipes</h2>
+            <div id="lista-catalogo"></div>
+          </div>
         </div>
-    </aside>
 
-    <!-- MAIN WRAPPER -->
-    <div class="main-wrapper">
-        <!-- TOP HEADER -->
-        <header class="top-header">
-            <h1 class="header-title" id="page-title">Enterprise System Dashboard</h1>
-            <div class="header-actions">
-                <span class="status-badge" id="system-status">System Operational</span>
-                <button class="btn btn-accent" id="btn-refresh">Refresh Engine</button>
+        <div id="sec-kitchen" class="section grid-2">
+          <div class="card">
+            <div style="display:flex; justify-content:space-between;">
+              <h2>Queue COUNTER (Max 5)</h2>
+              <span id="counter-count" class="badge badge-counter">0 / 5</span>
             </div>
-        </header>
+            <div style="font-size:0.8rem; color:var(--text-muted)">[FRENTE] ➔ [FINAL]</div>
+            <div id="counter-queue-ui" class="queue-container"></div>
+          </div>
 
-        <!-- MAIN CONTENT AREA -->
-        <main class="content-area">
+          <div class="card">
+            <div style="display:flex; justify-content:space-between;">
+              <h2>Queue DELIVERY (Max 5)</h2>
+              <span id="delivery-count" class="badge badge-delivery">0 / 5</span>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted)">[FRENTE] ➔ [FINAL]</div>
+            <div id="delivery-queue-ui" class="queue-container"></div>
+          </div>
 
-            <!-- METRIC CARDS -->
-            <section class="metrics-grid">
-                <div class="metric-card">
-                    <span class="metric-label">Total Documents</span>
-                    <span class="metric-value" id="metric-docs">1,284</span>
-                    <span class="metric-subtext">+12% from last hour</span>
-                </div>
-                <div class="metric-card yellow-accent">
-                    <span class="metric-label">Active Server Nodes</span>
-                    <span class="metric-value" id="metric-servers">8 / 10</span>
-                    <span class="metric-subtext">2 nodes standby</span>
-                </div>
-                <div class="metric-card">
-                    <span class="metric-label">Average Latency</span>
-                    <span class="metric-value" id="metric-latency">42 ms</span>
-                    <span class="metric-subtext">Optimal performance</span>
-                </div>
-                <div class="metric-card yellow-accent">
-                    <span class="metric-label">Error Rate</span>
-                    <span class="metric-value" id="metric-errors">0.04%</span>
-                    <span class="metric-subtext">Within safety parameters</span>
-                </div>
-            </section>
+          <div class="card" style="grid-column: span 2;">
+            <h2>Dispatch Control (3:1 Rule)</h2>
+            <p style="margin-bottom:10px; color:var(--text-muted)">
+              R2 Rule Counter (Counter orders served): <strong id="lbl-r2-counter" style="color:var(--accent-amber)">0 / 3</strong>
+            </p>
+            <button id="btn-next-order" class="btn btn-green" style="font-size:1.1rem; padding:12px 24px;">
+              🔔 Call Next Order to Assembly
+            </button>
+          </div>
+        </div>
 
-            <!-- MAIN PANELS -->
-            <section class="dashboard-grid">
-                <!-- PANEL 1: DATA TABLE & ENGINE CONTROL -->
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2 class="panel-title">Batch Document Processing Queue</h2>
-                        <button class="btn btn-primary" id="btn-add-doc">Process New Batch</button>
-                    </div>
+        <div id="sec-assembly" class="section grid-armado">
+          <div class="card">
+            <h2>Layer Stack (LIFO)</h2>
+            <div id="stack-ui" class="stack-visual"></div>
+          </div>
 
-                    <div class="alert-box" id="alert-banner">
-                        <span>Notice: Automated document compilation active using TypeScript engine layer.</span>
-                    </div>
+          <div class="card">
+            <h2>Active Order at Station</h2>
+            <div id="active-order-info">No order in assembly.</div>
+            <hr style="border-color:var(--border-color); margin:1rem 0;">
+            <h3>Assembly Controls</h3>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <select id="sel-layer"></select>
+              <button id="btn-add-layer" class="btn">Push Layer</button>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:15px; flex-wrap:wrap;">
+              <button id="btn-remove-layer" class="btn btn-amber">Pop Layer (LIFO)</button>
+              <button id="btn-verify" class="btn">Verify Recipe (RF-06)</button>
+              <button id="btn-mark-ready" class="btn btn-green">Mark READY</button>
+              <button id="btn-cancel-order" class="btn btn-danger">Cancel Order (R6)</button>
+            </div>
+          </div>
 
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Document Name</th>
-                                    <th>Format</th>
-                                    <th>Size</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="document-table-body">
-                                <!-- Populated dynamically by TypeScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+          <div class="card">
+            <h2>Expected Recipe</h2>
+            <div id="expected-recipe-ui"></div>
+          </div>
+        </div>
 
-                <!-- PANEL 2: SYSTEM LOGS & ACTIONS -->
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2 class="panel-title">System Event Logs</h2>
-                        <button class="btn btn-secondary" id="btn-clear-logs">Clear</button>
-                    </div>
+        <div id="sec-reports" class="section grid-2">
+          <div class="card">
+            <h2>System Metrics</h2>
+            <div id="metrics-ui"></div>
+          </div>
 
-                    <div class="form-group">
-                        <label for="log-filter">Filter Severity</label>
-                        <select id="log-filter" class="form-control">
-                            <option value="ALL">All Events</option>
-                            <option value="INFO">Information Only</option>
-                            <option value="WARNING">Warnings</option>
-                            <option value="ERROR">Errors</option>
-                        </select>
-                    </div>
+          <div class="card">
+            <h2>Chronological Operation Log</h2>
+            <div id="log-ui" class="log-box"></div>
+          </div>
+        </div>
+      </main>
+    `;
 
-                    <div class="log-container" id="log-container">
-                        <!-- Populated dynamically by TypeScript -->
-                    </div>
+    this.bindUIEvents();
+  }
 
-                    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 8px;">
-                        <label style="font-weight: 600; font-size: 0.85rem;">Manual System Dispatch</label>
-                        <div class="btn-group">
-                            <button class="btn btn-accent" id="btn-dispatch-job" style="flex: 1;">Dispatch Task</button>
-                            <button class="btn btn-primary" id="btn-trigger-error" style="flex: 1;">Simulate Fail</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+  bindUIEvents() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const target = e.target.getAttribute('data-tab');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        e.target.classList.add('active');
+        document.getElementById(target).classList.add('active');
+      });
+    });
 
-        </main>
-    </div>
+    document.getElementById('btn-avanzar-minute').addEventListener('click', () => {
+      this.simulatedMinute++;
+      document.getElementById('lbl-minute').innerText = this.simulatedMinute.toString();
+    });
 
-    <!-- ====================================================================
-         TYPESCRIPT ARCHITECTURE IMPLEMENTATION
-         ==================================================================== -->
-    <script type="text/babel" lang="ts">
+    document.getElementById('btn-load-sample').addEventListener('click', () => {
+      this.loadSampleData();
+      this.updateScreen();
+    });
 
-        // ==========================================
-        // 1. DATA MODELS & ENUMS
-        // ==========================================
+    document.getElementById('form-order').addEventListener('submit', (e) => {
+      e.preventDefault();
+      try {
+        const canal = document.getElementById('sel-channel').value;
+        const prodCodigo = document.getElementById('sel-product').value;
         
-        type DocumentFormat = "PDF" | "DOCX" | "JSON" | "XML";
-        type ProcessStatus = "COMPLETED" | "PROCESSING" | "QUEUED" | "FAILED";
-        type LogSeverity = "INFO" | "WARNING" | "ERROR";
-
-        interface BatchDocument {
-            id: string;
-            filename: string;
-            format: DocumentFormat;
-            sizeMb: number;
-            status: ProcessStatus;
-            createdAt: Date;
-        }
-
-        interface SystemLog {
-            id: string;
-            timestamp: Date;
-            severity: LogSeverity;
-            message: string;
-        }
-
-        interface ServerNode {
-            nodeId: string;
-            name: string;
-            loadPercentage: number;
-            isOnline: boolean;
-        }
-
-        // ==========================================
-        // 2. STATE MANAGEMENT LAYER
-        // ==========================================
-
-        class SystemStateManager {
-            private documents: BatchDocument[] = [];
-            private logs: SystemLog[] = [];
-            private servers: ServerNode[] = [];
-            private listeners: Array<() => void> = [];
-
-            constructor() {
-                this.seedInitialData();
-            }
-
-            private seedInitialData(): void {
-                this.documents = [
-                    { id: "DOC-1001", filename: "financial_report_q3.pdf", format: "PDF", sizeMb: 4.2, status: "COMPLETED", createdAt: new Date() },
-                    { id: "DOC-1002", filename: "user_manifest_v2.json", format: "JSON", sizeMb: 0.8, status: "PROCESSING", createdAt: new Date() },
-                    { id: "DOC-1003", filename: "architecture_diagram.xml", format: "XML", sizeMb: 12.5, status: "QUEUED", createdAt: new Date() },
-                    { id: "DOC-1004", filename: "legal_contract_final.docx", format: "DOCX", sizeMb: 2.1, status: "FAILED", createdAt: new Date() }
-                ];
-
-                this.servers = [
-                    { nodeId: "SRV-01", name: "US-East Primary Node", loadPercentage: 45, isOnline: true },
-                    { nodeId: "SRV-02", name: "EU-Central Worker Node", loadPercentage: 82, isOnline: true },
-                    { nodeId: "SRV-03", name: "AP-East Secondary Node", loadPercentage: 0, isOnline: false }
-                ];
-
-                this.addLog("INFO", "System state initialized successfully.");
-                this.addLog("WARNING", "Server node SRV-03 offline for maintenance.");
-            }
-
-            public subscribe(listener: () => void): void {
-                this.listeners.push(listener);
-            }
-
-            private notify(): void {
-                this.listeners.forEach(callback => callback());
-            }
-
-            public getDocuments(): BatchDocument[] {
-                return [...this.documents];
-            }
-
-            public getLogs(): SystemLog[] {
-                return [...this.logs];
-            }
-
-            public getServers(): ServerNode[] {
-                return [...this.servers];
-            }
-
-            public addDocument(doc: BatchDocument): void {
-                this.documents.unshift(doc);
-                this.addLog("INFO", `Document added to processing queue: ${doc.filename}`);
-                this.notify();
-            }
-
-            public removeDocument(id: string): void {
-                this.documents = this.documents.filter(d => d.id !== id);
-                this.addLog("WARNING", `Document removed: ${id}`);
-                this.notify();
-            }
-
-            public addLog(severity: LogSeverity, message: string): void {
-                const newLog: SystemLog = {
-                    id: `LOG-${Math.floor(1000 + Math.random() * 9000)}`,
-                    timestamp: new Date(),
-                    severity,
-                    message
-                };
-                this.logs.unshift(newLog);
-                this.notify();
-            }
-
-            public clearLogs(): void {
-                this.logs = [];
-                this.notify();
-            }
-        }
-
-        // Initialize Global State
-        const appState = new SystemStateManager();
-
-        // ==========================================
-        // 3. DOCUMENT PROCESSOR SERVICE (FACTORY PATTERN)
-        // ==========================================
-
-        class DocumentFactory {
-            private static counter: number = 1005;
-
-            public static createRandomDocument(): BatchDocument {
-                const formats: DocumentFormat[] = ["PDF", "DOCX", "JSON", "XML"];
-                const statuses: ProcessStatus[] = ["QUEUED", "PROCESSING", "COMPLETED"];
-                
-                const chosenFormat = formats[Math.floor(Math.random() * formats.length)];
-                const chosenStatus = statuses[Math.floor(Math.random() * statuses.length)];
-                
-                const id = `DOC-${this.counter++}`;
-                const filename = `data_export_${Math.floor(Math.random() * 100)}.${chosenFormat.toLowerCase()}`;
-                const sizeMb = parseFloat((Math.random() * 15 + 0.1).toFixed(1));
-
-                return {
-                    id,
-                    filename,
-                    format: chosenFormat,
-                    sizeMb,
-                    status: chosenStatus,
-                    createdAt: new Date()
-                };
-            }
-        }
-
-        // ==========================================
-        // 4. UI RENDERER & INTERACTIVE LOGIC
-        // ==========================================
-
-        class DashboardUI {
-            private docTableBody: HTMLElement;
-            private logContainer: HTMLElement;
-            private metricDocs: HTMLElement;
-            private logFilterSelect: HTMLSelectElement;
-
-            constructor() {
-                this.docTableBody = document.getElementById("document-table-body")!;
-                this.logContainer = document.getElementById("log-container")!;
-                this.metricDocs = document.getElementById("metric-docs")!;
-                this.logFilterSelect = document.getElementById("log-filter") as HTMLSelectElement;
-
-                this.bindEvents();
-                appState.subscribe(() => this.render());
-            }
-
-            private bindEvents(): void {
-                // Add Document Button
-                document.getElementById("btn-add-doc")?.addEventListener("click", () => {
-                    const newDoc = DocumentFactory.createRandomDocument();
-                    appState.addDocument(newDoc);
-                });
-
-                // Clear Logs Button
-                document.getElementById("btn-clear-logs")?.addEventListener("click", () => {
-                    appState.clearLogs();
-                });
-
-                // Dispatch Job Button
-                document.getElementById("btn-dispatch-job")?.addEventListener("click", () => {
-                    appState.addLog("INFO", "Manual job execution dispatched to active nodes.");
-                });
-
-                // Trigger Error Button
-                document.getElementById("btn-trigger-error")?.addEventListener("click", () => {
-                    appState.addLog("ERROR", "Execution failure reported in processing node SRV-02.");
-                });
-
-                // Refresh Button
-                document.getElementById("btn-refresh")?.addEventListener("click", () => {
-                    appState.addLog("INFO", "Engine state re-synchronized.");
-                });
-
-                // Filter Change
-                this.logFilterSelect?.addEventListener("change", () => {
-                    this.renderLogs();
-                });
-
-                // Navigation Items Interaction
-                const navItems = document.querySelectorAll(".nav-item");
-                navItems.forEach(item => {
-                    item.addEventListener("click", (e) => {
-                        navItems.forEach(i => i.classList.remove("active"));
-                        (e.target as HTMLElement).classList.add("active");
-                        const navName = (e.target as HTMLElement).innerText;
-                        appState.addLog("INFO", `Navigated to section: ${navName}`);
-                    });
-                });
-            }
-
-            private getStatusBadgeClass(status: ProcessStatus): string {
-                switch (status) {
-                    case "COMPLETED": return "badge-active";
-                    case "PROCESSING": return "badge-pending";
-                    case "QUEUED": return "badge-pending";
-                    case "FAILED": return "badge-failed";
-                }
-            }
-
-            public render(): void {
-                this.renderDocuments();
-                this.renderLogs();
-                this.renderMetrics();
-            }
-
-            private renderDocuments(): void {
-                const docs = appState.getDocuments();
-                this.docTableBody.innerHTML = "";
-
-                if (docs.length === 0) {
-                    this.docTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No active documents in processing queue.</td></tr>`;
-                    return;
-                }
-
-                docs.forEach(doc => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td><strong>${doc.id}</strong></td>
-                        <td>${doc.filename}</td>
-                        <td>${doc.format}</td>
-                        <td>${doc.sizeMb} MB</td>
-                        <td><span class="badge-status ${this.getStatusBadgeClass(doc.status)}">${doc.status}</span></td>
-                        <td>
-                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="window.deleteDocument('${doc.id}')">Delete</button>
-                        </td>
-                    `;
-                    this.docTableBody.appendChild(row);
-                });
-            }
-
-            private renderLogs(): void {
-                const selectedSeverity = this.logFilterSelect.value;
-                let logs = appState.getLogs();
-
-                if (selectedSeverity !== "ALL") {
-                    logs = logs.filter(l => l.severity === selectedSeverity);
-                }
-
-                this.logContainer.innerHTML = "";
-
-                if (logs.length === 0) {
-                    this.logContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 10px;">No logs match criteria.</div>`;
-                    return;
-                }
-
-                logs.forEach(log => {
-                    const item = document.createElement("div");
-                    item.className = `log-item ${log.severity === 'ERROR' ? 'error' : ''}`;
-                    
-                    const timeStr = log.timestamp.toLocaleTimeString();
-                    
-                    item.innerHTML = `
-                        <div class="log-timestamp">[${timeStr}] Severity: ${log.severity}</div>
-                        <div class="log-message">${log.message}</div>
-                    `;
-                    this.logContainer.appendChild(item);
-                });
-            }
-
-            private renderMetrics(): void {
-                const docs = appState.getDocuments();
-                this.metricDocs.textContent = docs.length.toString();
-            }
-        }
-
-        // Global helper for row actions
-        (window as any).deleteDocument = (id: string): void => {
-            appState.removeDocument(id);
-        };
-
-        // Initialize application on DOM ready
-        document.addEventListener("DOMContentLoaded", () => {
-            const ui = new DashboardUI();
-            ui.render();
+        const capasOmitir = [];
+        document.querySelectorAll('.chk-omitir:checked').forEach(chk => {
+          capasOmitir.push(chk.value);
         });
 
-    </script>
+        this.sistema.registerOrder(canal, prodCodigo, capasOmitir, this.simulatedMinute);
+        this.hideError();
+        this.updateScreen();
+      } catch (err) {
+        this.showError(err.message);
+      }
+    });
+
+    document.getElementById('sel-product').addEventListener('change', (e) => {
+      this.renderSkipOptions(e.target.value);
+    });
+
+    document.getElementById('btn-next-order').addEventListener('click', () => {
+      try {
+        const res = this.sistema.nextOrder();
+        if (!res) {
+          this.showError("There are no pending orders in either queue.");
+        } else {
+          this.hideError();
+          this.updateScreen();
+          document.querySelector('[data-tab="sec-assembly"]').click();
+        }
+      } catch (err) {
+        this.showError(err.message);
+      }
+    });
+
+    document.getElementById('btn-add-layer').addEventListener('click', () => {
+      try {
+        const capa = document.getElementById('sel-layer').value;
+        const res = this.sistema.addLayer(capa);
+        if (res.advertenciaR5) {
+          this.showError(res.advertenciaR5);
+        } else {
+          this.hideError();
+        }
+        this.updateScreen();
+      } catch (err) {
+        this.showError(err.message);
+      }
+    });
+
+    document.getElementById('btn-remove-layer').addEventListener('click', () => {
+      try {
+        this.sistema.removeLayer();
+        this.hideError();
+        this.updateScreen();
+      } catch (err) {
+        this.showError(err.message);
+      }
+    });
+
+    document.getElementById('btn-verify').addEventListener('click', () => {
+      try {
+        const verif = this.sistema.verify();
+        if (verif.esCorrecto) {
+          alert("✅ VERIFICATION SUCCESSFUL: The stack exactly matches the expected recipe.");
+        } else {
+          alert(`❌ VERIFICATION FAILED:\nMissing: ${verif.missing.join(', ') || 'None'}\nExtra: ${verif.extra.join(', ') || 'None'}`);
+        }
+      } catch (err) {
+        this.showError(err.message);
+      }
+    });
+
+    document.getElementById('btn-mark-ready').addEventListener('click', () => {
+      try {
+        this.sistema.markReady(this.simulatedMinute);
+        this.hideError();
+        this.updateScreen();
+        alert("🎉 Order completed successfully.");
+      } catch (err) {
+        this.showError(err.message);
+      }
+    });
+
+    document.getElementById('btn-cancel-order').addEventListener('click', () => {
+      try {
+        this.sistema.cancelOrder();
+        this.hideError();
+        this.updateScreen();
+      } catch (err) {
+        this.showError(err.message);
+      }
+    });
+  }
+
+  loadSampleData() {
+    try {
+      this.sistema.loadCatalog([
+        {
+          code: 'BRG-01',
+          nombre: 'Classic Burger',
+          receta: ['pan_base', 'salsa', 'carne', 'queso', 'cebolla', 'tomate', 'pan_tapa']
+        },
+        {
+          code: 'BRG-02',
+          nombre: 'Double Bacon Cheeseburger',
+          receta: ['pan_base', 'salsa', 'carne', 'queso', 'carne', 'queso', 'bacon', 'pan_tapa']
+        },
+        {
+          code: 'PER-01',
+          nombre: 'Special Hot Dog',
+          receta: ['pan_perro', 'salchicha', 'queso', 'cebolla', 'papas_ripio', 'salsa']
+        }
+      ]);
+      this.updateProductSelect();
+    } catch (err) {
+      // Catálogo ya inicializado
+    }
+  }
+
+  updateProductSelect() {
+    const sel = document.getElementById('sel-product');
+    sel.innerHTML = '';
+    const products = this.sistema.catalog.toArray();
+    products.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.code;
+      opt.text = `${p.code} - ${p.nombre}`;
+      sel.appendChild(opt);
+    });
+
+    if (products.length > 0) {
+      this.renderSkipOptions(products[0].codigo);
+    }
+  }
+
+  renderSkipOptions(productCode) {
+    const box = document.getElementById('box-skip-layers');
+    box.innerHTML = '';
+    const prod = this.sistema.catalog.find(p => p.code === productCode);
+    if (!prod) return;
+
+    prod.receta.toArray().forEach(capa => {
+      const lbl = document.createElement('label');
+      lbl.style.display = 'inline-flex';
+      lbl.style.alignItems = 'center';
+      lbl.style.gap = '4px';
+      lbl.style.background = '#6b1d1d';
+      lbl.style.padding = '4px 8px';
+      lbl.style.borderRadius = '4px';
+      lbl.innerHTML = `<input type="checkbox" class="chk-omitir" value="${capa}"> ${capa}`;
+      box.appendChild(lbl);
+    });
+  }
+
+  showError(message) {
+    const el = document.getElementById('global-alert');
+    el.innerText = message;
+    el.style.display = 'block';
+  }
+
+  hideError() {
+    const el = document.getElementById('global-alert');
+    el.style.display = 'none';
+  }
+
+  updateScreen() {
+    // 1. Catálogo
+    const catUI = document.getElementById('lista-catalogo');
+    catUI.innerHTML = '';
+    this.sistema.catalog.toArray().forEach(p => {
+      catUI.innerHTML += `
+        <div style="background:#2b0b0b; padding:10px; margin-bottom:8px; border-radius:6px; border:1px solid var(--border-color);">
+          <strong>${p.code} - ${p.nombre}</strong>
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">
+            Recipe: ${p.receta.toArray().map((c, i) => `${i + 1}.${c}`).join(' ➔ ')}
+          </div>
+        </div>
+      `;
+    });
+
+    // 2. Queues
+    const colaM = this.sistema.counterQueue.toArrayInOrder();
+    const colaMUI = document.getElementById('counter-queue-ui');
+    colaMUI.innerHTML = colaM.length === 0 ? '<em style="color:var(--text-muted)">Empty queue</em>' : '';
+    colaM.forEach((ped, idx) => {
+      colaMUI.innerHTML += `
+        <div class="queue-item ${idx === 0 ? 'front' : ''}">
+          <strong>#${ped.numero}</strong><br>
+          <small>${ped.productCode}</small><br>
+          <small style="color:var(--accent-amber)">Min: ${ped.arrivalMinute}</small>
+        </div>
+      `;
+    });
+    document.getElementById('counter-count').innerText = `${this.sistema.counterQueue.getLength()} / 5`;
+
+    const colaD = this.sistema.deliveryQueue.toArrayInOrder();
+    const colaDUI = document.getElementById('delivery-queue-ui');
+    colaDUI.innerHTML = colaD.length === 0 ? '<em style="color:var(--text-muted)">Empty queue</em>' : '';
+    colaD.forEach((ped, idx) => {
+      colaDUI.innerHTML += `
+        <div class="queue-item ${idx === 0 ? 'front' : ''}">
+          <strong>#${ped.numero}</strong><br>
+          <small>${ped.productCode}</small><br>
+          <small style="color:var(--accent-amber)">Min: ${ped.arrivalMinute}</small>
+        </div>
+      `;
+    });
+    document.getElementById('delivery-count').innerText = `${this.sistema.deliveryQueue.getLength()} / 5`;
+
+    document.getElementById('lbl-r2-counter').innerText = `${this.sistema.counterOrdersServed} / 3`;
+
+    // 3. Estación Armado
+    const pedActivo = this.sistema.activeOrder;
+    const infoActivo = document.getElementById('active-order-info');
+    const recetaExpUI = document.getElementById('expected-recipe-ui');
+    const selCapa = document.getElementById('sel-layer');
+
+    selCapa.innerHTML = '';
+    const ingreds = ['pan_base', 'pan_tapa', 'pan_perro', 'salsa', 'carne', 'queso', 'cebolla', 'tomate', 'bacon', 'salchicha', 'papas_ripio'];
+    ingreds.forEach(ing => {
+      const opt = document.createElement('option');
+      opt.value = ing;
+      opt.text = ing;
+      selCapa.appendChild(opt);
+    });
+
+    if (!pedActivo) {
+      infoActivo.innerHTML = '<em style="color:var(--text-muted)">No hay ningún pedido activo en armado.</em>';
+      recetaExpUI.innerHTML = '-';
+    } else {
+      const expectedRecipe = this.sistema.getExpectedRecipe(pedActivo);
+      infoActivo.innerHTML = `
+        <p><strong>Order #${pedActivo.numero}</strong> (${pedActivo.canal})</p>
+        <p>Product: ${pedActivo.productCode}</p>
+        <p>Without: ${pedActivo.sin.toArray().join(', ') || 'None'}</p>
+        <p>Arrival: Minute ${pedActivo.arrivalMinute}</p>
+      `;
+
+      recetaExpUI.innerHTML = expectedRecipe.map((capa, idx) => `
+        <div style="padding:6px; background:#2b0b0b; margin-bottom:4px; border-radius:4px; border-left:3px solid var(--accent-blue)">
+          ${idx + 1}. ${capa}
+        </div>
+      `).join('');
+    }
+
+    // LIFO Stack
+    const pilaUI = document.getElementById('stack-ui');
+    pilaUI.innerHTML = '';
+    const capasPila = this.sistema.assemblyStack.toArrayFromTop();
+    
+    if (capasPila.length === 0) {
+      pilaUI.innerHTML = '<em style="color:var(--text-muted); margin:auto;">Empty Stack (Base)</em>';
+    } else {
+      capasPila.forEach((capa, idx) => {
+        const div = document.createElement('div');
+        div.className = `layer-block ${idx === 0 ? 'top' : ''}`;
+        div.innerText = `${capa} ${idx === 0 ? '(TOPE)' : ''}`;
+        pilaUI.appendChild(div);
+      });
+    }
+
+    // 4. Métricas y Bitácora
+    const metricsUI = document.getElementById('metrics-ui');
+    const historial = this.sistema.orderHistory.toArray();
+    const cumplidos = historial.filter(h => h.meetsPromise).length;
+    const porcCumpli = historial.length > 0 ? ((cumplidos / historial.length) * 100).toFixed(1) : '100';
+
+    metricsUI.innerHTML = `
+      <p>Counter Served: <strong>${this.sistema.totalCounterServed}</strong></p>
+      <p>Delivery Served: <strong>${this.sistema.totalDeliveryServed}</strong></p>
+      <p>Counter Rejected (Full Queue R7): <strong style="color:var(--accent-red)">${this.sistema.totalCounterRejected}</strong></p>
+      <p>Delivery Rejected (Full Queue R7): <strong style="color:var(--accent-red)">${this.sistema.totalDeliveryRejected}</strong></p>
+      <hr style="border-color:var(--border-color); margin:8px 0;">
+      <p>Promise Time Compliance (R8): <strong>${porcCumpli}%</strong></p>
+      <p>Assembly Errors Detected (R5): <strong style="color:var(--accent-amber)">${this.sistema.assemblyErrors}</strong></p>
+      <p>Total Wasted Layers (R5/R6): <strong style="color:var(--accent-red)">${this.sistema.wasteList.getLength()}</strong></p>
+    `;
+
+    const bitacoraUI = document.getElementById('log-ui');
+    bitacoraUI.innerHTML = this.sistema.log.toArray().map(line => `<div>${line}</div>`).join('');
+    bitacoraUI.scrollTop = bitacoraUI.scrollHeight;
+  }
+}
+
+// Inicialización de la aplicación
+window.addEventListener('DOMContentLoaded', () => {
+  new KitchenInterface();
+});
+</script>
+
 </body>
 </html>
