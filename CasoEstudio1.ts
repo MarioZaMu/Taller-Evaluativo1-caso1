@@ -8,6 +8,15 @@
 <body>
 
 <script>
+/**
+ * TALLER CON FRONTEND - CASO DE ESTUDIO 1: COCINA DE COMIDA RÁPIDA
+ * Estructuras Propias: Lista Enlazada + Cola Circular O(1) + Pila LIFO O(1)
+ * Todo en un solo archivo autosuficiente para Sublime Text / TypeScript.
+ */
+
+// ============================================================================
+// 1. ESTRUCTURAS DE DATOS PROPIAS (ESTRICTAMENTE PROHIBIDO USAR ARRAY NATIVO)
+// ============================================================================
 
 class NodoLista {
   constructor(info) {
